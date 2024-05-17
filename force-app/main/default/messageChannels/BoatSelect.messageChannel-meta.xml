@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description
+  >This is a Lightning Message Channel for boat selection.</description>
+    <isExposed>true</isExposed>
+    <lightningMessageFields>
+        <description>The ID of the selected boat</description>
+        <fieldName>boatId</fieldName>
+    </lightningMessageFields>
+    <masterLabel>BoatSelect</masterLabel>
+</LightningMessageChannel>
