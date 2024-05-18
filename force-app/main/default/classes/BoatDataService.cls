@@ -20,9 +20,10 @@ public with sharing class BoatDataService {
     }
 
     @AuraEnabled(cacheable=true)
-    public static List<Boat__c> getSimilarBoats(Id boatId, String similarBy) {
+    public static List<Boat__c> getSimilarBoats(Id boatId, String similarBy) 
+    {
         List<Boat__c> similarBoats = new List<Boat__c>();
-        List<Boat__c> parentBoat = [SELECT Id, Length__c, Price__c, BoatType__c, BoatType__r.Name
+        List<Boat__c> parentBoat = [SELECT Id, Length__c, Price__c, BoatType__c, BoatType__r.NameSELECT Id, Name FROM Boat__c
                                     FROM Boat__c
                                     WHERE Id = :boatId 
                                     WITH SECURITY_ENFORCED];

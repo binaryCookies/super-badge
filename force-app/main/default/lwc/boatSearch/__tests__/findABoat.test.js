@@ -1,50 +1,92 @@
+import getBoats from "@salesforce/apex/BoatDataService.getBoats";
 import { createElement } from "lwc";
 import BoatSearch from "c/boatSearch";
-import { NavigationMixin } from "lightning/navigation";
+
+// Mock the getBoats method from the BoatDataService Apex class
+jest.mock(
+  "@salesforce/apex/BoatDataService.getBoats",
+  () => {
+    return {
+      default: jest.fn()
+    };
+  },
+  { virtual: true }
+);
 
 describe("c-boat-search", () => {
   afterEach(() => {
-    // The jsdom instance is shared across test cases in a single file so reset the DOM
+    // Clean up the DOM after each test
     while (document.body.firstChild) {
       document.body.removeChild(document.body.firstChild);
     }
+    jest.clearAllMocks();
   });
 
   it("should handle loading", () => {
-    // Create an instance of the BoatSearch component
     const element = createElement("c-boat-search", {
       is: BoatSearch
     });
 
     document.body.appendChild(element);
-
-    // Call the handleLoading method
     element.handleLoading();
-
-    // Check if the loading state has been set correctly
     expect(element.isLoading).toBe(true);
   });
 
-  // it("should create a new boat", () => {
-  //   // Create an instance of the BoatSearch component
-  //   const element = createElement("c-boat-search", {
-  //     is: BoatSearch
-  //   });
+  it("should handle doneLoading", () => {
+    const element = createElement("c-boat-search", {
+      is: BoatSearch
+    });
 
-  //   document.body.appendChild(element);
+    document.body.appendChild(element);
+    element.handleDoneLoading();
+    expect(element.isLoading).toBe(false);
+  });
 
-  // Mock the NavigationMixin.Navigate method
-  // element[NavigationMixin.Navigate] = jest.fn();
+  it("searchBoats returns and dispatches boats", async () => {
+    const mockBoats = [
+      { Id: "a02aj000001UFR4AAO", Name: "Sounder" },
+      { Id: "a02aj000001UFR5AAO", Name: "Gallifrey Falls" }
+    ];
 
-  // Call the createNewBoat method
-  // element.createNewBoat();
+    // Mock the resolved value of getBoats
+    // getBoats.mockResolvedValue(mockBoats);
 
-  // Check if NavigationMixin.Navigate has been called with the correct parameters
-  // expect(element[NavigationMixin.Navigate]).toHaveBeenCalledWith({
-  //   type: "standard__objectPage",
-  //   attributes: {
-  //     objectApiName: "Boat__c",
-  //     actionName: "new"
-  //   }
-  // });
+    // Mock the resolved value of getBoats based on the input parameter
+    getBoats.mockImplementation((params) => {
+      if (params.boatTypeId === "a01aj00000HnGCDAA3")
+        Promise.resolve([mockBoats[0]]); // Return the specific boat for the given boatTypeId
+      return Promise.resolve(mockBoats); // Return all boats if no boatTypeId is provided
+    });
+
+    // Create the element
+    const element = createElement("c-boat-search", {
+      is: BoatSearch
+    });
+    document.body.appendChild(element);
+
+    // Spy on dispatchEvent to verify it gets called later
+    const dispatchEventSpy = jest.spyOn(element, "dispatchEvent");
+
+    // Call the searchBoats method with the mock event
+    const mockEvent = { detail: { boatTypeId: "a01aj00000HnGCDAA3" } };
+    await element.searchBoats(mockEvent);
+
+    // Verify that getBoats was called with the correct parameter
+    expect(getBoats).toHaveBeenCalledWith({ ...mockEvent.detail });
+    expect(getBoats).toHaveBeenCalledWith({ boatTypeId: "a01aj00000HnGCDAA3" });
+
+    // Find A Boat: Inspect the element to ensure the correct boat was returned
+    // const aBoat = await getBoats({ boatTypeId: "a01aj00000HnGCDAA3" });
+    const boatList = await getBoats.mock.results[0].value;
+    console.log("Jest - boatList:", boatList);
+    expect(boatList).toBe(mockBoats);
+
+    // Verify that dispatchEvent was called with the correct event
+    expect(dispatchEventSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "search",
+        detail: { boats: mockBoats }
+      })
+    );
+  });
 });
