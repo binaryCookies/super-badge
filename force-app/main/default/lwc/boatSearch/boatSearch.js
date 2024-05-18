@@ -59,16 +59,25 @@ export default class BoatSearch extends LightningElement {
 
   /**
    * searchBoats: Required as per documentation
-   * @description:  function to pass the value of boatTypeId to
-   * the public function searchBoats(boatTypeId) from
-   * the boatSearchResults component,
-   * so it can be used by getBoats().
    *
-   * use Apex class BoatDataService.getBoats(boatTypeId) to get the list of boats.
-   * return the list of boats filtered by the boatTypeId.
+   * @param {Object} event - The event object containing the boatTypeId to search for.
+   * @param {Object} event.detail - The detail property of the event object.
+   * @param {string} event.detail.boatTypeId - The boatTypeId to filter the boats.
    *
-   * dispatch custom event loading and doneloading to handle the loading spinner.
-   * _isLoading must be a private property.
+   * @innerFunction getBoats - Fetches the list of boats filtered by the boatTypeId from the BoatDataService Apex class or returns all if no boatTypeId is provided.
+   *
+   * @description
+   * This function takes the boatTypeId from the event object and calls the getBoats method from the BoatDataService Apex class
+   * to retrieve a list of boats filtered by the boatTypeId. The function then dispatches a custom "search" event with the retrieved
+   * list of boats. It handles the loading state by setting the _isLoading property to true before making the call and to false after
+   * the call completes. The function also logs any errors that occur during the process.
+   *
+   * - use Apex class BoatDataService.getBoats({ boatTypeId }) to get the list of boats.
+   * - Return the list of boats filtered by the boatTypeId.
+   * - Dispatch custom events "loading" and "doneLoading" to handle the loading spinner.
+   * - _isLoading must be a private property.
+   *
+   * @returns {Promise<Array>} A promise that resolves to the list of boats.
    */
   // 1 - imported getBoats from BoatDataService
   @api
