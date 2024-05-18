@@ -79,7 +79,7 @@ export default class BoatSearch extends LightningElement {
    *
    * @returns {Promise<Array>} A promise that resolves to the list of boats.
    */
-  // 1 - imported getBoats from BoatDataService
+
   @api
   async searchBoats(event) {
     let boats;

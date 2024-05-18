@@ -12,7 +12,13 @@ jest.mock(
   },
   { virtual: true }
 );
-
+/**
+ * describe block
+ * @description Test suite for c-boat-search component which is used to search for boats.
+ * searchBoats method is used to search for boats based on the boatTypeId.
+ *
+ * The tests are focused on the searchBoats method which is used to search for boats based on the boatTypeId.
+ */
 describe("c-boat-search", () => {
   afterEach(() => {
     // Clean up the DOM after each test
@@ -22,6 +28,78 @@ describe("c-boat-search", () => {
     jest.clearAllMocks();
   });
 
+  /**
+   * Test handling of loading and doneLoading events
+   */
+
+  it("should handle loading", () => {
+    const element = createElement("c-boat-search", {
+      is: BoatSearch
+    });
+
+    document.body.appendChild(element);
+    element.handleLoading();
+    expect(element.isLoading).toBe(true);
+  });
+
+  it("should handle doneLoading", () => {
+    const element = createElement("c-boat-search", {
+      is: BoatSearch
+    });
+
+    document.body.appendChild(element);
+    element.handleDoneLoading();
+    expect(element.isLoading).toBe(false);
+  });
+
+  /**
+   * Test case for no boatTypeId provided.
+   */
+  it("searchBoats handles no boatTypeId", async () => {
+    // Mocked list of boats
+    const mockBoats = [
+      { Id: "a02aj000001UFR4AAO", Name: "Sounder" },
+      { Id: "a02aj000001UFR5AAO", Name: "Gallifrey Falls" }
+    ];
+
+    // Mock the resolved value of getBoats
+    getBoats.mockResolvedValue(mockBoats);
+
+    // Create the element
+    const element = createElement("c-boat-search", {
+      is: BoatSearch
+    });
+    document.body.appendChild(element);
+
+    // Spy on dispatchEvent to verify it gets called later
+    const dispatchEventSpy = jest.spyOn(element, "dispatchEvent");
+
+    // Call the searchBoats method without the boatTypeId
+    await element.searchBoats({ detail: {} });
+
+    // Verify that getBoats was called without parameters
+    expect(getBoats).toHaveBeenCalledWith({});
+
+    // Verify that dispatchEvent was called with the correct event
+    expect(dispatchEventSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "search",
+        detail: { boats: mockBoats }
+      })
+    );
+
+    // Verify that the returned list has the correct length
+    const boatList = await getBoats({});
+    expect(boatList.length).toBe(mockBoats.length);
+  });
+
+  /**
+   * Test case for dispatching search event with boats.
+   *  Test searchBoats method with the mock event and mock data.
+   * Expect getBoats to be called with the correct parameter and return the correct boat.
+   * @test
+   * @async
+   */
   it("searchBoats returns and dispatches boats", async () => {
     const mockBoats = [
       { Id: "a02aj000001UFR4AAO", Name: "Sounder" },
