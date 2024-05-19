@@ -12,11 +12,12 @@ public with sharing class BoatDataService {
                      + 'Geolocation__Longitude__s, Picture__c, Contact__r.Name, '
                      + 'BoatType__c, BoatType__r.Name, Length__c, Price__c '
                      + 'FROM Boat__c';
+        if (String.isNotBlank(boatTypeId)) {
             query += ' WHERE BoatType__c = :boatTypeId';
         }
-        query += ' WITH SECURITY_ENFORCED ';
+        query += ' WITH SECURITY_ENFORCED';
         return Database.query(query);
-    }
+    }    
 
     @AuraEnabled(cacheable=true)
     public static List<Boat__c> getSimilarBoats(Id boatId, String similarBy) {

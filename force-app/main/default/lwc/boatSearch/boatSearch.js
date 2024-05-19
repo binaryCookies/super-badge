@@ -86,7 +86,7 @@ export default class BoatSearch extends LightningElement {
     this._isLoading = true;
     const boatTypeId = event && event.detail ? event.detail.boatTypeId : null;
     try {
-      boats = await getBoats({ boatTypeId });
+      boats = await getBoats({ boatTypeId: "a01aj00000HnGCDAA3" });
       const searchEvent = new CustomEvent("search", {
         detail: {
           boats: boats

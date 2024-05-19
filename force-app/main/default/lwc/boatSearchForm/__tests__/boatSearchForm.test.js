@@ -1,6 +1,7 @@
-import { createElement } from "lwc";
+import { createElement, wire } from "lwc";
 import BoatSearchForm from "c/boatSearchForm";
-import getBoats from "@salesforce/apex/BoatDataService.getBoats"; // import the getBoats method
+import { getBoatTypes } from "@salesforce/apex/BoatDataService.getBoatTypes";
+import getBoats from "@salesforce/apex/BoatDataService.getBoats";
 
 jest.mock(
   "@salesforce/apex/BoatDataService.getBoats",
