@@ -39,11 +39,12 @@ export default class BoatSearchForm extends LightningElement {
    * @param {error} error
    * @param {data} data
    *
-   * TODO boatTypes({error, data})
+   * TODO boatTypes({error, data}) complete function to populate the map of boat types names and Ids
    */
   @wire(getBoatTypes)
   boatTypes({ error, data }) {
     if (data) {
+      console.log("data. fn: boatTypes", data);
       this.searchOptions = data.map((type) => {
         return { label: type.Name, value: type.Id };
       });
@@ -57,11 +58,28 @@ export default class BoatSearchForm extends LightningElement {
    * @param event
    *
    * TODO handleSearchOptionChange
+   * We can’t find the correct settings for the method
+   * handleSearchOptionChange() in the component boatSearchForm
+   * JavaScript file. Make sure the method was created according
+   * to the requirements, including the selectedBoatTypeId assigned
+   * to boatTypeId in the detail, and the proper content dispatched
+   * through the custom event search, using the correct case-sensitivity
+   * and quotation.
+   *
+   * - Changing the value of this dropdown menu must dynamically trigger the search for the boats and display the results in the boatSearchResults component.
+   *  - fire a custom event named search, using the method handleSearchOptionChange(event)
+   *  - Then pass the value of selectedBoatTypeId in the detail using the key boatTypeId through a dispatched event
+   *  @param {event} event
+   *  @fires searchEvent
+   *  @returns {CustomEvent} names and Id of boat types
+   *  @description The custom event ensures Queries to the Apex class for the list of boat types
    */
+
   handleSearchOptionChange(event) {
-    // Create the const searchEvent
-    // searchEvent must be the new custom event search
-    searchEvent;
-    this.dispatchEvent(searchEvent);
+    this.selectedBoatTypeId = event.detail.value;
+    const searchEvent = new CustomEvent("search", {
+      detail: { boatTypeId: this.selectedBoatTypeId }
+    });
+    return this.dispatchEvent(searchEvent);
   }
 }

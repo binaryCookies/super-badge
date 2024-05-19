@@ -1,4 +1,9 @@
-.slds-align-middle {
-  display: flex;
-  justify-content: center;
+.combobox-container {
+  width: 150px;
+  margin: 0 auto;
+}
+
+/* Ensure text inside the combobox is left-aligned */
+.combobox-element .slds-input {
+  text-align: left;
 }

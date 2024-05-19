@@ -5,7 +5,7 @@ import { LightningElement, track, api } from "lwc";
 import { NavigationMixin } from "lightning/navigation";
 import getBoats from "@salesforce/apex/BoatDataService.getBoats";
 
-export default class BoatSearch extends LightningElement {
+export default class BoatSearch extends NavigationMixin(LightningElement) {
   /**
    * track state by declaring private properties
    * isLoading: Tracks changes to the isLoading attribute.
@@ -86,7 +86,17 @@ export default class BoatSearch extends LightningElement {
     this._isLoading = true;
     const boatTypeId = event && event.detail ? event.detail.boatTypeId : null;
     try {
+      // Hardcoded boatTypeId for testing purposes
       boats = await getBoats({ boatTypeId: "a01aj00000HnGCDAA3" });
+      console.log("Boats. fn: searchBoats:", boats);
+      /**
+       * Dispatches a custom event with the list of boat ids.
+       * @type {CustomEvent}
+       * @returns {CustomEvent} searchEvent
+       *         detail: {
+          boats: boats
+        }
+       */
       const searchEvent = new CustomEvent("search", {
         detail: {
           boats: boats
@@ -102,12 +112,28 @@ export default class BoatSearch extends LightningElement {
     return boats;
   }
 
+  /**
+   * Debugging
+   * Use connectedCallback to call the searchBoats
+   * method when the component is initialized.
+   * Using the connected callback to call the method in the class
+   * and hence view the logs in the console.
+   */
+  connectedCallback() {
+    // Call searchBoats method when component is initialized
+    this.searchBoats({ detail: { boatTypeId: "a01aj00000HnGCDAA3" } });
+  }
   // Creates a new boat
+  // Method to handle the search button click
+  handleSearch() {
+    this.searchBoats({ detail: { boatTypeId: "a01aj00000HnGCDAA3" } });
+  }
   createNewBoat() {
     // uses the NavigationMixin extension to open a
     // 'standard form' so the user can create a new boat record.
+    console.log("createNewBoat called");
     this[NavigationMixin.Navigate]({
-      type: "standard__form",
+      type: "standard__objectPage",
       attributes: {
         objectApiName: "Boat__c",
         actionName: "new"

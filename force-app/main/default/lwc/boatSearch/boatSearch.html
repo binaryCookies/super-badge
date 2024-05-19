@@ -1,14 +1,15 @@
 <!-- boatSearch.html -->
 <template>
-  <lightning-layout multiple-rows>
+  <lightning-layout multiple-rows class="slds-grid slds-align-middle">
     <!-- Top -->
-    <lightning-layout-item size="12">
+    <lightning-layout-item size="12" class="slds-align-middle">
       <lightning-card title="Find a Boat">
         <!-- New Boat button -->
         <lightning-button
           slot="actions"
           label="New Boat"
           onclick={createNewBoat}
+          class="slds-button_small"
         ></lightning-button>
 
         <p class="slds-var-p-horizontal_small">
