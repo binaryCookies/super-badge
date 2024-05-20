@@ -16,7 +16,7 @@ multiple-rows="true" and horizontal-align="center" are added to the lightning-la
 size="4" is added to lightning-layout-item to specify the width of each item.
  -->
 <template>
-  <lightning-tabset>
+  <lightning-tabset variant="scoped">
     <lightning-tab label="Gallery">
       <div class="slds-scrollable_y">
         <!-- layout horizontally aligned to the center  -->
@@ -26,7 +26,10 @@ size="4" is added to lightning-layout-item to specify the width of each item.
           <template for:each={boats} for:item="boat">
             <lightning-layout-item
               key={boat.Id}
-              size="4"
+              size="12"
+              small-device-size="6"
+              medium-device-size="4"
+              large-device-size="3"
               class="slds-p-around_small"
             >
               <c-boat-tile

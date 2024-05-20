@@ -14,11 +14,11 @@
   width: 100%;
 } */
 
-.slds-truncate {
+/* .slds-truncate {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
+} */
 
 .tile {
   width: 100%;

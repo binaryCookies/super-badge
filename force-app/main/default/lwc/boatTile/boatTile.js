@@ -124,6 +124,11 @@ By following these steps, we ensure that the `boatTile` component receives the n
  * showing the boat picture from the field Picture__c on the Boat__c object.
  */
 
+// Challenge Not yet complete... here's what's wrong:
+// We can’t find the correct settings for the h1 related to the
+// boat name in the component boatTile. Make sure the component
+// was created according to the requirements, including styling.
+
 export default class BoatTile extends LightningElement {
   @api selectedBoatId;
   @api boat;
