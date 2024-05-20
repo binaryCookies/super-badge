@@ -64,51 +64,55 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
    * @param {Object} event.detail - The detail property of the event object.
    * @param {string} event.detail.boatTypeId - The boatTypeId to filter the boats.
    *
-   * @innerFunction getBoats - Fetches the list of boats filtered by the boatTypeId from the BoatDataService Apex class or returns all if no boatTypeId is provided.
-   *
    * @description
    * This function takes the boatTypeId from the event object and calls the getBoats method from the BoatDataService Apex class
-   * to retrieve a list of boats filtered by the boatTypeId. The function then dispatches a custom "search" event with the retrieved
-   * list of boats. It handles the loading state by setting the _isLoading property to true before making the call and to false after
-   * the call completes. The function also logs any errors that occur during the process.
-   *
-   * - use Apex class BoatDataService.getBoats({ boatTypeId }) to get the list of boats.
-   * - Return the list of boats filtered by the boatTypeId.
-   * - Dispatch custom events "loading" and "doneLoading" to handle the loading spinner.
-   * - _isLoading must be a private property.
+   * to retrieve a list of boats filtered by the boatTypeId. The function then updates the boatSearchResults component
+   * and dispatches a custom "search" event with the retrieved list of boats. It handles the loading state by setting the isLoading property
+   * to true before making the call and to false after the call completes. The function also logs any errors that occur during the process.
    *
    * @returns {Promise<Array>} A promise that resolves to the list of boats.
    */
-
   @api
   async searchBoats(event) {
-    let boats;
     this._isLoading = true;
-    const boatTypeId = event && event.detail ? event.detail.boatTypeId : null;
+    let boats;
+    const boatTypeId = event && event.detail ? event.detail.boatTypeId : "";
+
+    // Query the boatSearchResults component
+    const boatSearchResultsComponent = this.template.querySelector(
+      "c-boat-search-results"
+    );
+    if (boatSearchResultsComponent) {
+      boatSearchResultsComponent.boatTypeId = boatTypeId;
+    }
+
+    // Dispatch loading event
+    this.dispatchEvent(new CustomEvent("loading"));
+
     try {
-      // Hardcoded boatTypeId for testing purposes
-      boats = await getBoats({ boatTypeId: "a01aj00000HnGCDAA3" });
+      boats = await getBoats({ boatTypeId });
       console.log("Boats. fn: searchBoats:", boats);
-      /**
-       * Dispatches a custom event with the list of boat ids.
-       * @type {CustomEvent}
-       * @returns {CustomEvent} searchEvent
-       *         detail: {
-          boats: boats
-        }
-       */
+
+      // Update boatSearchResults component with new boats data
+      if (boatSearchResultsComponent) {
+        boatSearchResultsComponent.searchBoats(boatTypeId);
+      }
+
+      // Dispatch search event with boats data
       const searchEvent = new CustomEvent("search", {
-        detail: {
-          boats: boats
-        }
+        detail: { boats }
       });
       this.dispatchEvent(searchEvent);
+
       return boats;
     } catch (error) {
       console.error("Error fetching boats:", error);
     } finally {
       this._isLoading = false;
+      // Dispatch doneLoading event
+      this.dispatchEvent(new CustomEvent("doneloading"));
     }
+
     return boats;
   }
 

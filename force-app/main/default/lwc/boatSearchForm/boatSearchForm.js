@@ -66,7 +66,8 @@ export default class BoatSearchForm extends LightningElement {
    * through the custom event search, using the correct case-sensitivity
    * and quotation.
    *
-   * - Changing the value of this dropdown menu must dynamically trigger the search for the boats and display the results in the boatSearchResults component.
+   * - Changing the value of this dropdown menu must dynamically trigger the search for the boats
+   *  - and display the results in the boatSearchResults component.
    *  - fire a custom event named search, using the method handleSearchOptionChange(event)
    *  - Then pass the value of selectedBoatTypeId in the detail using the key boatTypeId through a dispatched event
    *  @param {event} event

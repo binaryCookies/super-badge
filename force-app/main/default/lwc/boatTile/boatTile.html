@@ -1,8 +1,25 @@
 <template>
   <div onclick={selectBoat} class={tileClass}>
+    <!-- the background image of each boat-->
     <div style={backgroundStyle} class="tile"></div>
     <div class="lower-third">
       <!-- Boat information goes here -->
+      <!-- boat name -->
+      <h1 class="slds-truncate slds-text-heading_medium">{boatName}</h1>
+      <!-- owner name -->
+      <h2 class="slds-truncate slds-text-heading_small">{boatOwnerName}</h2>
+      <!-- lightning formatted number used for proper formatting -->
+      <!-- boat price -->
+      <div class="slds-text-body_small">
+        <lightning-formatted-number
+          value={boatPrice}
+          maximum-fraction-digits="2"
+        ></lightning-formatted-number>
+      </div>
+      <!-- boat length -->
+      <div class="slds-text-body-small">{boatLength}</div>
+      <!-- boat type -->
+      <div class="slds-text-body-small">{boatType}</div>
     </div>
   </div>
 </template>
