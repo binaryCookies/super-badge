@@ -4,24 +4,27 @@
     <div style={backgroundStyle} class="tile"></div>
     <div class="lower-third">
       <!-- Boat information goes here -->
-
       <!-- boat name -->
-      <h1 class="slds-truncate slds-text-heading_medium">{boatName}</h1>
+
+      <h1 class="slds-truncate slds-text-heading_medium">{boat.Name}</h1>
+
       <!-- owner name -->
-      <h2 class="slds-truncate slds-text-heading_small">{boatOwnerName}</h2>
+      <h2 class="slds-truncate slds-text-heading_small">
+        {boat.Contact__r.Name}
+      </h2>
 
       <!-- lightning formatted number used for proper formatting -->
       <!-- boat price -->
       <div class="slds-text-body_small">
         <lightning-formatted-number
-          value={boatPrice}
+          value={boat.Price__c}
           maximum-fraction-digits="2"
         ></lightning-formatted-number>
       </div>
       <!-- boat length -->
-      <div class="slds-text-body-small">{boatLength}</div>
+      <div class="slds-text-body-small">{boat.Length__c}</div>
       <!-- boat type -->
-      <div class="slds-text-body-small">{boatType}</div>
+      <div class="slds-text-body-small">{boat.BoatType__r.Name}</div>
     </div>
   </div>
 </template>

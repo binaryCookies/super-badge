@@ -28,7 +28,6 @@ export default class BoatSearchResults extends LightningElement {
   // For boatTile component - debug
   @api boatTypeId = "";
   @track selectedBoatId;
-  subscription = null;
 
   @track columns = [
     { label: "Name", fieldName: "Name", type: "text" },
@@ -37,8 +36,19 @@ export default class BoatSearchResults extends LightningElement {
     { label: "Type", fieldName: "BoatType__r.Name", type: "text" }
   ];
 
+  // Wire the message context
   @wire(MessageContext)
   messageContext;
+  // Subscribe to the message channel
+  subscription = null;
+
+  connectedCallback() {
+    if (!this.subscription) {
+      this.subscription = subscribe(this.messageContext, BOATMC, (message) =>
+        this.handleMessage(message)
+      );
+    }
+  }
 
   // Passes boatTypeId to the getBoats() method
   @wire(getBoats, { boatTypeId: "$boatTypeId" })
@@ -54,20 +64,16 @@ export default class BoatSearchResults extends LightningElement {
     this._isLoading = false;
   }
 
-  connectedCallback() {
-    this.subscribeToMessageChannel();
-  }
-
-  subscribeToMessageChannel() {
-    if (!this.subscription) {
-      this.subscription = subscribe(this.messageContext, BOATMC, (message) =>
-        this.handleMessage(message)
-      );
-    }
-  }
-
+  // Handle the message and update selectedBoatId
   handleMessage(message) {
     this.selectedBoatId = message.recordId;
+    console.log("Selected boat ID from message service:", this.selectedBoatId);
+  }
+
+  // Handle the boatselect event
+  handleBoatSelect(event) {
+    this.selectedBoatId = event.detail.boatId;
+    console.log("Selected boat ID from custom event:", this.selectedBoatId);
   }
 
   /**

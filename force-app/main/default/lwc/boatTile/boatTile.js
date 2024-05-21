@@ -136,12 +136,12 @@ export default class BoatTile extends LightningElement {
   @wire(MessageContext)
   messageContext;
 
-  handleBoatSelected(message) {
-    const boatId = message.boatId;
-    console.log("Boat ID received:", boatId);
-    // Fetch the boat details using boatId
-    this.getBoat(boatId);
-  }
+  // handleBoatSelected(message) {
+  //   const boatId = message.boatId;
+  //   console.log("Boat ID received:", boatId);
+  //   // Fetch the boat details using boatId
+  //   this.getBoat(boatId);
+  // }
 
   connectedCallback() {
     console.log("boatTile connectedCallback - boat:", this.boat);
@@ -191,9 +191,10 @@ export default class BoatTile extends LightningElement {
     this.dispatchEvent(loading);
   }
 
+  // GETTERS NOT USED IN THE CHALLENGE
   // Getter for boat name
   get boatName() {
-    return this.boat ? this.boat.Name : "";
+    return this.boat && this.boat.Name ? this.boat.Name : "";
   }
 
   // Getter for boat owner name
@@ -230,9 +231,13 @@ export default class BoatTile extends LightningElement {
       detail: { boatId: this.boat?.Id }
     });
 
+    // Log the event to check the details
+    console.log("boat selected:", selectEvent.detail);
     this.dispatchEvent(selectEvent);
 
     // Publish boat Id using the message service
     publish(this.messageContext, BOATMC, { recordId: this.boat.Id });
+    // Log to check message service data
+    console.log("Published boat ID:", this.boat.Id);
   }
 }
