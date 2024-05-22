@@ -143,30 +143,35 @@ export default class BoatTile extends LightningElement {
   //   this.getBoat(boatId);
   // }
 
-  connectedCallback() {
-    console.log("boatTile connectedCallback - boat:", this.boat);
-    console.log("messageContext:", this.messageContext);
-  }
-
   /**
-   *
-   * @returns a string that contains the background-image:url(),
-   * showing the boat picture from the field Picture__c on the Boat__c object.
+   * Getter for dynamically setting the background image for the picture.
+   * @returns {string} Background image style.
    */
-
-  // Getter for dynamically setting the background image for the picture
   get backgroundStyle() {
     return `background-image: url('${this.boat?.Picture__c}')`;
   }
 
-  // Getter for dynamically setting the tile class based on whether the
-  // current boat is selected
+  /**
+   * Getter for dynamically setting the tile class based on whether the
+   * current boat is selected.
+   * @returns {string} Tile class.
+   */
   get tileClass() {
     return this.boat?.Id === this.selectedBoatId
       ? TILE_WRAPPER_SELECTED_CLASS
       : TILE_WRAPPER_UNSELECTED_CLASS;
   }
 
+  /**
+   * @description This method is used to search for boats. It takes an event object as a parameter,
+   * which contains a detail property. This detail property is an object that contains a boatTypeId.
+   * The boatTypeId is used to filter the boats. The method then queries the template for the
+   * 'c-boat-search-results' component and calls its searchBoats method, passing the boatTypeId.
+   *
+   * @param {Object} event - The event object.
+   * @property {Object} event.detail - The details of the event.
+   * @property {string} event.detail.boatTypeId - The boatTypeId to filter the boats.
+   */
   searchBoats(event) {
     const boatTypeId = event.detail.boatTypeId;
     this.template
@@ -174,6 +179,9 @@ export default class BoatTile extends LightningElement {
       .searchBoats(boatTypeId);
   }
 
+  /**
+   * Dispatches a custom event to notify that loading has started.
+   */
   loading() {
     const loading = new CustomEvent("loading", {
       detail: {
@@ -182,6 +190,10 @@ export default class BoatTile extends LightningElement {
     });
     this.dispatchEvent(loading);
   }
+
+  /**
+   * Dispatches a custom event to notify that loading has finished.
+   */
   doneLoading() {
     const loading = new CustomEvent("doneloading", {
       detail: {
@@ -189,32 +201,6 @@ export default class BoatTile extends LightningElement {
       }
     });
     this.dispatchEvent(loading);
-  }
-
-  // GETTERS NOT USED IN THE CHALLENGE
-  // Getter for boat name
-  get boatName() {
-    return this.boat && this.boat.Name ? this.boat.Name : "";
-  }
-
-  // Getter for boat owner name
-  get boatOwnerName() {
-    return this.boat && this.boat.Contact__r ? this.boat.Contact__r.Name : "";
-  }
-
-  // Getter for boat price
-  get boatPrice() {
-    return this.boat ? this.boat.Price__c : 0;
-  }
-
-  // Getter for boat length
-  get boatLength() {
-    return this.boat ? this.boat.Length__c : "";
-  }
-
-  // Getter for boat type
-  get boatType() {
-    return this.boat ? this.boat.BoatType__r.Name : "";
   }
 
   /**
@@ -226,18 +212,30 @@ export default class BoatTile extends LightningElement {
    * - then boatSearchResults component can propagate
    * the event using the message service
    */
+  // Add this listener in your connectedCallback method to verify event handling
   selectBoat() {
+    if (!this.boat || !this.boat.Id) {
+      console.error("Boat or Boat ID is missing", this.boat);
+      return;
+    }
+
+    // Create the custom event with the boat ID
     const selectEvent = new CustomEvent("boatselect", {
-      detail: { boatId: this.boat?.Id }
+      detail: { boatId: this.boat.Id },
+      bubbles: true
+      // composed: true // Off, causing error, check if needed
     });
 
-    // Log the event to check the details
-    console.log("boat selected:", selectEvent.detail);
+    // Dispatches the event.
     this.dispatchEvent(selectEvent);
 
     // Publish boat Id using the message service
-    publish(this.messageContext, BOATMC, { recordId: this.boat.Id });
-    // Log to check message service data
-    console.log("Published boat ID:", this.boat.Id);
+    publish(this.messageContext, BOATMC, {
+      boatData: this.boat,
+      recordId: this.boat.Id
+    });
+    // Log to check the data being published
+    console.log("Published boat data::", this.boat);
+    console.log("Published boat ID::", this.boat.Id);
   }
 }

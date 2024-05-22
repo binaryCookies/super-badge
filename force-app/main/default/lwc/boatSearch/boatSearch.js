@@ -60,6 +60,7 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
   /**
    * searchBoats: Required as per documentation
    *
+   * @api searchBoats an `@api` method for the parent component to call.
    * @param {Object} event - The event object containing the boatTypeId to search for.
    * @param {Object} event.detail - The detail property of the event object.
    * @param {string} event.detail.boatTypeId - The boatTypeId to filter the boats.
