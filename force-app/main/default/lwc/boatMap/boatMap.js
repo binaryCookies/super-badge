@@ -2,6 +2,7 @@ import { LightningElement, wire, api, track } from "lwc";
 import { getRecord } from "lightning/uiRecordApi";
 import {
   subscribe,
+  unsubscribe,
   MessageContext,
   APPLICATION_SCOPE
 } from "lightning/messageService";
@@ -85,15 +86,43 @@ export default class BoatMap extends LightningElement {
    *    using the function named updateMap()
    * @returns
    */
+  // connectedCallback() {
+  //   // if (this.subscription || this.boatId)
+  //   if (!this.subscription)
+  //     this.subscription = subscribe(
+  //       this.messageContext,
+  //       BOATMC,
+  //       (message) => this.handleMessage(message),
+  //       { scope: APPLICATION_SCOPE }
+  //     );
+  // }
   connectedCallback() {
-    // if (this.subscription || this.boatId)
-    if (!this.subscription)
+    if (this.subscription || this.recordId) return;
+
+    this.subscribeMC();
+  }
+
+  subscribeMC() {
+    if (!this.subscription) {
       this.subscription = subscribe(
         this.messageContext,
         BOATMC,
-        (message) => this.handleMessage(message),
+        (message) => {
+          this.boatId = message.recordId;
+        },
         { scope: APPLICATION_SCOPE }
       );
+    }
+  }
+  /**
+   * UnsubscribeMC method
+   * - unsubscribes from the message channel
+   * - use it in the disconnectedCallback lifecycle hook
+   * @returns {void} - returns nothing
+   */
+  unsubscribeMC() {
+    unsubscribe(this.subscription);
+    this.subscription = null;
   }
 
   handleMessage(message) {
