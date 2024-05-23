@@ -10,6 +10,8 @@ import BOATMC from "@salesforce/messageChannel/BoatMessageChannel__c";
 import updateBoatList from "@salesforce/apex/BoatDataService.updateBoatList";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 
+import { refreshApex } from "@salesforce/apex";
+
 const SUCCESS_TITLE = "Success";
 const MESSAGE_SHIP_IT = "Ship it!";
 const SUCCESS_VARIANT = "success";
@@ -36,11 +38,15 @@ export default class BoatSearchResults extends LightningElement {
   @track boats = [];
   @track boat; // boat object for the boatTile.selectBoat Event
   @track error;
+
   @track _isLoading = false;
 
   // For boatTile component - debug
   @api boatTypeId = "";
   @track selectedBoatId;
+
+  // Refresh Apex with boatId
+  wiredBoatResults;
 
   @track columns = [
     { editable: true, label: "Name", fieldName: "Name", type: "text" },
@@ -134,17 +140,10 @@ export default class BoatSearchResults extends LightningElement {
     this.recordId = recordId;
   }
 
-  // connectedCallback() {
-  //   if (!this.subscription) {
-  //     this.subscription = subscribe(this.messageContext, BOATMC, (message) =>
-  //       this.handleMessage(message)
-  //     );
-  //   }
-  // }
-
   // Passes boatTypeId to the getBoats() method
   @wire(getBoats, { boatTypeId: "$boatTypeId" })
   wiredBoats({ error, data }) {
+    this.wiredBoatResults = { error, data };
     if (data) {
       this.boats = data;
       console.log("Boats data, wiredBoats: ", data);
@@ -155,12 +154,6 @@ export default class BoatSearchResults extends LightningElement {
     }
     this._isLoading = false;
   }
-
-  // Handle the message and update selectedBoatId
-  // handleMessage(message) {
-  //   this.selectedBoatId = message.recordId;
-  //   console.log("Selected boat ID from message service:", this.selectedBoatId);
-  // }
 
   // Handle the boatselect event
   handleBoatSelect(event) {
@@ -175,23 +168,48 @@ export default class BoatSearchResults extends LightningElement {
    * @param {object} event object containing the boat object
    * Use the boat Id from the event.detail to publish the BoatMC
    *
+   * Message to be used in the Apex method getBoatByLocation(boatTypeId)
+   *
    * REQUIRED: explicitly pass boatId to the parameter recordId
    */
   sendMessageService(event) {
     // assign boat.Id to boatId and then add it to a custom event named boatselect
     const boatId = event.detail.boatId;
-
     publish(this.messageContext, BOATMC, { recordId: boatId });
   }
 
   /**
    * TODO
+   * Update Apex method getBoatByLocation(boatTypeId)
+   * Use the updated boatTypeId to call the getBoats method from the BoatDataService Apex class
    */
   // this public function must refresh the boats asynchronously
   // uses notifyLoading
-  refresh() {}
+  @api async refresh() {
+    if (this.notifyLoading(true)) this.handleLoading();
+    try {
+      await refreshApex(this.wiredBoatResults);
+    } catch (error) {
+      console.error("Error in refresh, boatSearchResults.js:", error);
+    }
+    if (this.notifyLoading(false)) this.doneLoading();
+  }
 
-  // this function must update selectedBoatId and call sendMessageService
+  /**
+   * updateSelectedTile() function
+   *
+   * The info about the currently selected boat must be sent to other components,
+   * like the Current Boat Location and Details. In the boatSearchResults
+   * component, use the function updateSelectedTile()
+   * to update the information about the currently selected
+   * boat Id based on the event.
+   *
+   * Don’t forget that this component must also use the existing
+   * loading spinner when loading records.
+   *
+   * this function must update selectedBoatId and call sendMessageService
+   * TODO
+   */
   updateSelectedTile() {}
 
   // The handleSave method must save the changes in the Boat Editor
@@ -205,6 +223,7 @@ export default class BoatSearchResults extends LightningElement {
       this.notifyLoading(true);
       const updatedFields = event.detail.draftValues;
       console.log("Draft values: ", updatedFields);
+
       const processedFieldValues = updatedFields.map((record) => {
         let fields = {};
         fields.Id = record.Id;
@@ -227,6 +246,7 @@ export default class BoatSearchResults extends LightningElement {
               variant: SUCCESS_VARIANT
             })
           );
+          this.refresh();
         })
         .catch((error) => {
           this.notifyLoading(false);
@@ -243,6 +263,7 @@ export default class BoatSearchResults extends LightningElement {
         .finally(() => {
           // Clear draft values after saving
           const datatable = this.template.querySelector("lightning-datatable");
+
           if (datatable) datatable.draftValues = [];
         });
     } catch (error) {

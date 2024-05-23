@@ -16,12 +16,14 @@ const BOAT_FIELDS = [LONGITUDE_FIELD, LATITUDE_FIELD];
  * getter and setter in the component boatMap JavaScript file.
  * Make sure the component was created according to the requirements,
  * using the proper case-sensitivity.
+ *
+ *
  */
 export default class BoatMap extends LightningElement {
   @api selectedBoatId; // not sure if this is needed
 
   // Internal id variable to not reassign the public property
-  @track _boatId;
+  // @track _boatId;
   @track mapMarkers = [];
   subscription = null;
   error = undefined;
@@ -29,25 +31,18 @@ export default class BoatMap extends LightningElement {
   // TODO MY IMPLEMENTATION
   @track _boat;
 
+  @api boatId;
+
   @wire(MessageContext) messageContext;
 
-  @api get boatId() {
-    return this._boatId;
-  }
-
-  set boatId(value) {
-    // Set the boatId attribute in the boatMap component/element
-    this.setAttribute("boatId", value);
-    this._boatId = value;
-  }
-
+  @api
   get recordId() {
-    return this._boatId;
+    return this.boatId;
   }
 
   set recordId(value) {
     this.setAttribute("boatId", value);
-    this._boatId = value;
+    this.boatId = value;
   }
   /**
    * @wire getRecord
@@ -63,7 +58,7 @@ export default class BoatMap extends LightningElement {
    * @listens BOATMC the event that is listened to by the method
    */
 
-  @wire(getRecord, { recordId: "$_boatId", fields: BOAT_FIELDS })
+  @wire(getRecord, { recordId: "$boatId", fields: BOAT_FIELDS })
   wiredRecord({ error, data }) {
     if (data) {
       this.error = undefined;
@@ -71,14 +66,9 @@ export default class BoatMap extends LightningElement {
       this.updateMap(data);
     } else if (error) {
       this.error = error;
-      this._boatId = undefined;
+      this.boatId = undefined;
       this.mapMarkers = [];
     }
-  }
-
-  subscribeMC() {
-    // if (this.subscription || this.recordId) {
-    // }
   }
 
   /**
@@ -96,22 +86,23 @@ export default class BoatMap extends LightningElement {
    * @returns
    */
   connectedCallback() {
-    // if (this.subscription || this._boatId) {
-    //   return;
-    // }
-    this.subscription = subscribe(
-      this.messageContext,
-      BOATMC,
-      (message) => this.handleMessage(message),
-      { scope: APPLICATION_SCOPE }
-    );
-    console.log("Subscription boatMap.js", this.subscription);
+    // if (this.subscription || this.boatId)
+    if (!this.subscription)
+      this.subscription = subscribe(
+        this.messageContext,
+        BOATMC,
+        (message) => this.handleMessage(message),
+        { scope: APPLICATION_SCOPE }
+      );
   }
 
   handleMessage(message) {
-    this._boatId = message.recordId;
+    if (message)
+      console.log("BOAT MAP event data received in handleMessage:", message);
+    // this.boatId(message.recordId);
+    this.boatId = message.recordId;
 
-    this._boat = message.boatData;
+    this.boat = message.boatData;
   }
 
   /**
@@ -125,7 +116,7 @@ export default class BoatMap extends LightningElement {
     const latitude = boat.fields.Geolocation__Latitude__s.value;
     const longitude = boat.fields.Geolocation__Longitude__s.value;
     // const name = boat.fields.Name.value;
-    const name = this._boat?.Name || "Unknown Boat Name";
+    const name = this.boat?.Name || "Unknown Boat Name";
 
     console.log("Latitude:", latitude);
     console.log("Longitude:", longitude);

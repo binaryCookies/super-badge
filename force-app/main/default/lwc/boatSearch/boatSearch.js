@@ -10,7 +10,7 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
    * track state by declaring private properties
    * isLoading: Tracks changes to the isLoading attribute.
    */
-  _isLoading = false;
+  @track _isLoading = false;
 
   @track selectedBoatTypeId = "";
   @track searchOptions = [];
@@ -48,9 +48,10 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
   }
 
   /**
-   * Creates the getter for the isLoading property to make it public.
+   * Binds isLoading to the boatSearch template
    * isLoading: Tracks changes to the isLoading attribute.
    * @description: Use isLoading getter accessor to make the private property _isLoading public.   *
+   * @returns {boolean} isLoading - Returns the value of the private property _isLoading.
    */
   @api
   get isLoading() {
@@ -117,22 +118,7 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
     return boats;
   }
 
-  /**
-   * Debugging
-   * Use connectedCallback to call the searchBoats
-   * method when the component is initialized.
-   * Using the connected callback to call the method in the class
-   * and hence view the logs in the console.
-   */
-  connectedCallback() {
-    // Call searchBoats method when component is initialized
-    this.searchBoats({ detail: { boatTypeId: "a01aj00000HnGCDAA3" } });
-  }
   // Creates a new boat
-  // Method to handle the search button click
-  handleSearch() {
-    this.searchBoats({ detail: { boatTypeId: "a01aj00000HnGCDAA3" } });
-  }
   createNewBoat() {
     // uses the NavigationMixin extension to open a
     // 'standard form' so the user can create a new boat record.
