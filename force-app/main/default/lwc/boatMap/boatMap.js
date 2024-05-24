@@ -30,12 +30,13 @@ export default class BoatMap extends LightningElement {
   error = undefined;
 
   // TODO MY IMPLEMENTATION
-  @track _boat;
+  @track boat;
 
   @api boatId;
 
   @wire(MessageContext) messageContext;
 
+  // Logic to run recordId changes
   @api
   get recordId() {
     return this.boatId;
@@ -64,7 +65,9 @@ export default class BoatMap extends LightningElement {
     if (data) {
       this.error = undefined;
       console.log("BoatMap wiredRecord data: ", data);
-      this.updateMap(data);
+      const latitude = data.fields.Geolocation__Latitude__s.value;
+      const longitude = data.fields.Geolocation__Longitude__s.value;
+      this.updateMap(latitude, longitude, data);
     } else if (error) {
       this.error = error;
       this.boatId = undefined;
@@ -109,6 +112,11 @@ export default class BoatMap extends LightningElement {
         BOATMC,
         (message) => {
           this.boatId = message.recordId;
+          this.boat = message.boatData; // if updating boat is a problem update the boatName instead
+          console.log(
+            "BOAT MAP event data received in handleMessage:",
+            message
+          );
         },
         { scope: APPLICATION_SCOPE }
       );
@@ -125,25 +133,17 @@ export default class BoatMap extends LightningElement {
     this.subscription = null;
   }
 
-  handleMessage(message) {
-    if (message)
-      console.log("BOAT MAP event data received in handleMessage:", message);
-    // this.boatId(message.recordId);
-    this.boatId = message.recordId;
-
-    this.boat = message.boatData;
-  }
-
   /**
    *
    * @param {object} boat the boat data to update the map markers
    */
-  updateMap(boat) {
+  updateMap(latitude, longitude, boat) {
+    // No boat name in this log statement
     console.log("Boat data received in updateMap:", boat);
 
     // Extract the necessary fields from the boat object
-    const latitude = boat.fields.Geolocation__Latitude__s.value;
-    const longitude = boat.fields.Geolocation__Longitude__s.value;
+    // const latitude = boat.fields.Geolocation__Latitude__s.value;
+    // const longitude = boat.fields.Geolocation__Longitude__s.value;
     // const name = boat.fields.Name.value;
     const name = this.boat?.Name || "Unknown Boat Name";
 
@@ -153,8 +153,8 @@ export default class BoatMap extends LightningElement {
     this.mapMarkers = [
       {
         location: {
-          Latitude: boat.fields.Geolocation__Latitude__s.value,
-          Longitude: boat.fields.Geolocation__Longitude__s.value
+          Latitude: latitude,
+          Longitude: longitude
         },
         title: name,
         description: `Coords: ${latitude}, ${longitude}`
