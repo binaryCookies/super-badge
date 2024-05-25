@@ -1,6 +1,7 @@
 import { LightningElement, track, wire, api } from "lwc";
 import {
   subscribe,
+  unsubscribe,
   publish,
   MessageContext,
   APPLICATION_SCOPE
@@ -96,6 +97,15 @@ export default class BoatSearchResults extends LightningElement {
   }
 
   /**
+   * unsubscribe from the message channel
+   */
+
+  unsubscribeToMessageChannel() {
+    unsubscribe(this.subscription);
+    this.subscription = null;
+  }
+
+  /**
    * TODO event.detail is empty
    * @param {string} event the event name to handle the boat select event
    */
@@ -128,12 +138,12 @@ export default class BoatSearchResults extends LightningElement {
     const recordId = message.recordId;
     const boatName = boatData.Name;
     // TODO boat name to be displayed in the map marker/tile
-    console.log(
-      "Boat data received in handleMessage:",
-      boatName,
-      boatData,
-      recordId
-    );
+    // console.log(
+    //   "Boat data received in handleMessage:",
+    //   boatName,
+    //   boatData,
+    //   recordId
+    // );
 
     // Update the selected boat Id
     this.boat = boatData;
@@ -146,8 +156,12 @@ export default class BoatSearchResults extends LightningElement {
     this.wiredBoatResults = { error, data };
     if (data) {
       this.boats = data;
-      console.log("Boats data, wiredBoats: ", data);
+      // console.log("boatSearchResults. Boats data, wiredBoats: ", data);
       this.error = undefined;
+
+      // publish the boatData object to the BoatMC message channel
+      const payload = { boatData: data };
+      publish(this.messageContext, BOATMC, payload);
     } else if (error) {
       this.error = error;
       this.boats = undefined;
@@ -278,5 +292,9 @@ export default class BoatSearchResults extends LightningElement {
       this.dispatchEvent(new CustomEvent("loading"));
     }
     this.dispatchEvent(new CustomEvent("doneloading"));
+  }
+
+  disconectedCallback() {
+    this.unsubscribeToMessageChannel();
   }
 }

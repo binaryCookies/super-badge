@@ -1,0 +1,16 @@
+<template>
+  <lightning-card class="slds-is-relative">
+    <!-- Spinner template, visible when isLoading is true -->
+    <template if:true={isLoading}>
+      <lightning-spinner
+        alternative-text="Loading"
+        variant="brand"
+      ></lightning-spinner>
+    </template>
+    <!-- Map template, visible when mapMarkers are available -->
+    <template if:false={isLoading}>
+      <lightning-map map-markers={mapMarkers}></lightning-map>
+    </template>
+    <div slot="footer">Top 10 Only!</div>
+  </lightning-card>
+</template>
