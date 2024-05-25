@@ -4,6 +4,7 @@
 import { LightningElement, track, api } from "lwc";
 import { NavigationMixin } from "lightning/navigation";
 import getBoats from "@salesforce/apex/BoatDataService.getBoats";
+import { publish, MessageContext } from "lightning/messageService";
 
 export default class BoatSearch extends NavigationMixin(LightningElement) {
   /**

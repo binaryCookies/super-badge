@@ -5,96 +5,6 @@ import BOATMC from "@salesforce/messageChannel/BoatMessageChannel__c";
 const TILE_WRAPPER_SELECTED_CLASS = "tile-wrapper selected";
 const TILE_WRAPPER_UNSELECTED_CLASS = "tile-wrapper";
 
-// Summary of Data Transfer for BoatTile Component
-/**
- * ### Summary of Data Transfer for BoatTile Component
-
-To ensure the data is properly transferred and displayed in the `boatTile` component, the following steps and considerations are essential:
-
-1. **Wire the Message Context:**
-   - Import and wire the `MessageContext` to enable communication via the Lightning Message Service.
-   ```js
-   import { wire, MessageContext } from 'lightning/messageService';
-   @wire(MessageContext) messageContext;
-   ```
-
-2. **Subscribe to the Message Channel:**
-   - Subscribe to the message channel in the `connectedCallback` method to receive updates when a boat is selected.
-   ```js
-   import { subscribe } from 'lightning/messageService';
-   import BOATMC from '@salesforce/messageChannel/BoatMessageChannel__c';
-
-   connectedCallback() {
-     this.subscribeToMessageChannel();
-   }
-
-   subscribeToMessageChannel() {
-     if (!this.subscription) {
-       this.subscription = subscribe(
-         this.messageContext,
-         BOATMC,
-         (message) => this.handleMessage(message)
-       );
-     }
-   }
-
-   handleMessage(message) {
-     this.selectedBoatId = message.recordId;
-   }
-   ```
-
-3. **Fetch and Track Boats:**
-   - Use the `@wire` decorator to call the `getBoats` Apex method, passing in the `boatTypeId`. Track the data and handle loading and errors.
-   ```js
-   import getBoats from '@salesforce/apex/BoatDataService.getBoats';
-   @wire(getBoats, { boatTypeId: "$boatTypeId" }) wiredBoats({ error, data }) {
-     if (data) {
-       this.boats = data;
-       this.error = undefined;
-     } else if (error) {
-       this.error = error;
-       this.boats = undefined;
-     }
-     this._isLoading = false;
-   }
-   ```
-
-4. **Log Data for Debugging:**
-   - Add logging to ensure data is received correctly in both `boatSearchResults` and `boatTile`.
-   ```js
-   // In boatSearchResults
-   wiredBoats({ error, data }) {
-     if (data) {
-       console.log("Boats data: ", data);
-     } else if (error) {
-       console.error("Error fetching boats: ", error);
-     }
-   }
-
-   // In boatTile
-   renderedCallback() {
-     console.log("Boat data in boat-tile: ", this.boat);
-   }
-   ```
-
-5. **Correctly Pass Data to `boatTile`:**
-   - Ensure the `boat` data and `selectedBoatId` are passed as attributes to the `boatTile` component.
-   ```html
-   <template for:each={boats} for:item="boat">
-     <lightning-layout-item key={boat.Id} size="4" class="slds-p-around_small">
-       <c-boat-tile
-         key={boat.Id}
-         boat={boat}
-         selected-boat-id={selectedBoatId}
-         onboatselect={handleBoatSelect}
-       ></c-boat-tile>
-     </lightning-layout-item>
-   </template>
-   ```
-
-By following these steps, we ensure that the `boatTile` component receives the necessary data and can react appropriately to user interactions and data changes. This approach facilitates clear data flow and component communication within the Lightning Web Components framework.
- */
-
 // Requirements for BoatTile Component
 /**
  *  boatTile to display a boat for rent with a <div> that reacts to a click event using the function selectBoat().
@@ -158,9 +68,11 @@ export default class BoatTile extends LightningElement {
   }
 
   /**
-   * @description This method is used to search for boats. It takes an event object as a parameter,
-   * which contains a detail property. This detail property is an object that contains a boatTypeId.
-   * The boatTypeId is used to filter the boats. The method then queries the template for the
+   * @description This method is used to search for boats.
+   * It takes an event object as a parameter, which contains a detail property.
+   * This detail property is an object that contains a boatTypeId.
+   * The boatTypeId is used to filter the boats.
+   * The method then queries the template for the
    * 'c-boat-search-results' component and calls its searchBoats method, passing the boatTypeId.
    *
    * @param {Object} event - The event object.

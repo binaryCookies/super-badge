@@ -9,6 +9,8 @@ import {
   APPLICATION_SCOPE
 } from "lightning/messageService";
 
+import { refreshApex } from "@salesforce/apex";
+
 const LABEL_YOU_ARE_HERE = "You are here!";
 const ICON_STANDARD_USER = "standard:user";
 const ERROR_TITLE = "Error loading Boats Near Me";
@@ -44,10 +46,13 @@ export default class BoatsNearMe extends LightningElement {
         BOATMC,
         (message) => {
           this.boats = message;
+          this.boatTypeId = message.boatData.id;
           console.log(
             "BOATS NEAR ME event data received in handleMessage:",
             message
           );
+          // Trigger wire method update
+          refreshApex(this.wiredBoatsJSON);
         },
         { scope: APPLICATION_SCOPE }
       );
@@ -66,19 +71,32 @@ export default class BoatsNearMe extends LightningElement {
     }
   }
 
+  // TODO update boatTypeId from the menu
   // Add the wired method from the Apex Class
   // Name it getBoatsByLocation, and use latitude, longitude and boatTypeId
   // Handle the result and calls createMapMarkers
   @wire(getBoatsByLocation, {
     latitude: "$latitude",
     longitude: "$longitude",
-    boatTypeId: "$boatTypeId"
+    boatTypeId: "a01aj00000HnGCDAA3"
+    // boatTypeId: "$boatTypeId"
   })
   wiredBoatsJSON({ error, data }) {
-    if (error) return;
+    if (error) {
+      console.error("Error in wiredBoatsJSON:", error);
+      return;
+    }
+
     // Check result - should be an array of boat objects
-    if (data) console.log("boats near me:", data);
-    this.createMapMarkers(data);
+    if (data) console.log("fn wiredBoatsJSON: boats near me:", data);
+
+    // Try to parse the JSON string into an array
+    try {
+      const boatData = JSON.parse(data);
+      this.createMapMarkers(boatData);
+    } catch (e) {
+      console.error("Invalid JSON:", data);
+    }
     this.isLoading = false;
   }
 
@@ -129,13 +147,14 @@ export default class BoatsNearMe extends LightningElement {
 
   connectedCallback() {
     this.subscribeToMessageChannel();
+
     this.getLocationFromBrowser()
       .then(() => {
         console.log(
           "Location from browser:",
           this.latitude,
-          this.longitude,
-          this.boats
+          this.longitude
+          // this.boats // undefined
         );
       })
       .catch((error) => {
@@ -145,7 +164,19 @@ export default class BoatsNearMe extends LightningElement {
 
   // Creates the map markers
   createMapMarkers(boatData) {
+    // Log the input boatData
+    console.log("Input boatData to createMapMarkers:", boatData);
+
+    // Check if boatData is an array
+    if (!Array.isArray(boatData)) {
+      console.error("Expected boatData to be an array, but got:", boatData);
+      return;
+    }
+
     const newMarkers = boatData.map((boat) => {
+      // Log each boat's details
+      console.log("Processing boat:", boat);
+
       return {
         location: {
           Latitude: boat.Geolocation__Latitude__s,
@@ -155,7 +186,16 @@ export default class BoatsNearMe extends LightningElement {
         description: `Coords: ${boat.Geolocation__Latitude__s}, ${boat.Geolocation__Longitude__s}`
       };
     });
-    // Should be current user's location
+
+    // Log the user’s current location before unshifting
+    console.log(
+      "User's location - Latitude:",
+      this.latitude,
+      "Longitude:",
+      this.longitude
+    );
+
+    // Add the current user's location marker
     newMarkers.unshift({
       location: {
         Latitude: this.latitude,
@@ -164,6 +204,11 @@ export default class BoatsNearMe extends LightningElement {
       title: LABEL_YOU_ARE_HERE,
       icon: ICON_STANDARD_USER
     });
+
+    // Log the final newMarkers array
+    console.log("Final mapMarkers array:", newMarkers);
+
+    // Set the mapMarkers property
     this.mapMarkers = newMarkers;
   }
 }
