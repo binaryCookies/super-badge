@@ -44,7 +44,7 @@ export default class BoatSearchForm extends LightningElement {
   @wire(getBoatTypes)
   boatTypes({ error, data }) {
     if (data) {
-      console.log("data. fn: boatTypes", data);
+      console.log("boatSerachForm.js, data. fn: getBoatTypes", data);
       this.searchOptions = data.map((type) => {
         return { label: type.Name, value: type.Id };
       });

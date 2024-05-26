@@ -17,15 +17,9 @@ const ICON_STANDARD_USER = "standard:user";
 const ERROR_TITLE = "Error loading Boats Near Me";
 const ERROR_VARIANT = "error";
 
-/**
- * TODO
- ** We can't find the variables boatTypeId, mapMarkers, isLoading
- ** instantiated correctly in the component
- ** boatsNearMe JavaScript file.
- */
 export default class BoatsNearMe extends LightningElement {
-  @track boatTypeId = "";
-  @track boatTypeId2 = "";
+  @api boatTypeId = "";
+
   @track mapMarkers = [];
   @track isLoading = true;
   @track isRendered = false;
@@ -139,22 +133,18 @@ export default class BoatsNearMe extends LightningElement {
     boatTypeId: "$boatTypeId"
   })
   wiredBoatsJSON({ error, data }) {
-    this.isLoading = false;
-    if (error) {
-      this.showToast(ERROR_TITLE, error.body.message, ERROR_VARIANT);
-      console.error("Error in wiredBoatsJSON:", error);
-      return;
-    }
-
     if (data) {
-      console.log("fn wiredBoatsJSON: boats near me:", data);
-      try {
-        const boatData = JSON.parse(data);
-        this.createMapMarkers(boatData);
-      } catch (err) {
-        console.error("Error processing data:", err);
-        this.showToast(err);
-      }
+      this.createMapMarkers(data);
+    } else if (error) {
+      this.dispatchEvent(
+        new ShowToastEvent({
+          title: ERROR_TITLE,
+          message: error.body.message,
+          variant: ERROR_VARIANT
+        })
+      );
+
+      this.isLoading = false;
     }
   }
 
@@ -170,14 +160,9 @@ export default class BoatsNearMe extends LightningElement {
    * @returns {Promise} - returns a promise that resolves a lng/lat position when the location is fetched
    */
   async renderedCallback() {
-    if (this.isRendered) return;
-
-    try {
+    if (!this.isRendered) {
       await this.getLocationFromBrowser();
-      console.log("Location from browser:", this.latitude, this.longitude);
-      this.isRendered = true; // Set isRendered to true after location is fetched and map is rendered
-    } catch (error) {
-      console.error("Error getting location from browser:", error);
+      this.isRendered = true;
     }
   }
 
@@ -191,7 +176,7 @@ export default class BoatsNearMe extends LightningElement {
    * Use the property isRendered.
    */
   getLocationFromBrowser() {
-    if (this.isRendered) return;
+    // if (this.isRendered) return;
 
     return new Promise((resolve, reject) => {
       const geolocation = navigator.geolocation;
@@ -203,9 +188,15 @@ export default class BoatsNearMe extends LightningElement {
           if (position) {
             this.latitude = position.coords.latitude;
             this.longitude = position.coords.longitude;
+            console.log(
+              "USER Location from browser:",
+              this.latitude,
+              this.longitude
+            );
             resolve();
           }
         },
+
         (error) => {
           console.error("Error getting location", error);
           reject(error);
@@ -216,39 +207,19 @@ export default class BoatsNearMe extends LightningElement {
 
   // Creates the map markers
   createMapMarkers(boatData) {
-    // Log the input boatData
-    console.log("Input boatData to createMapMarkers:", boatData);
-
-    // Check if boatData is an array
-    if (!Array.isArray(boatData)) {
-      console.error("Expected boatData to be an array, but got:", boatData);
-      return;
-    }
-
-    const newMarkers = boatData.map((boat) => {
-      // Log each boat's details
+    const boats = JSON.parse(boatData);
+    this.mapMarkers = boats.map((boat) => {
       console.log("Processing boat:", boat);
+      const Latitude = boat.Geolocation__Latitude__s;
+      const Longitude = boat.Geolocation__Longitude__s;
 
       return {
-        location: {
-          Latitude: boat.Geolocation__Latitude__s,
-          Longitude: boat.Geolocation__Longitude__s
-        },
+        location: { Latitude, Longitude },
         title: boat.Name,
-        description: `Coords: ${boat.Geolocation__Latitude__s}, ${boat.Geolocation__Longitude__s}`
+        description: `Coords:${Latitude},${Longitude}`
       };
     });
-
-    // Log the user’s current location before unshifting
-    console.log(
-      "User's location - Latitude:",
-      this.latitude,
-      "Longitude:",
-      this.longitude
-    );
-
-    // Add the current user's location marker
-    newMarkers.unshift({
+    this.mapMarkers.unshift({
       location: {
         Latitude: this.latitude,
         Longitude: this.longitude
@@ -256,22 +227,6 @@ export default class BoatsNearMe extends LightningElement {
       title: LABEL_YOU_ARE_HERE,
       icon: ICON_STANDARD_USER
     });
-
-    // Log the final newMarkers array
-    console.log("Final mapMarkers array:", newMarkers);
-
-    // Set the mapMarkers property
-    this.mapMarkers = newMarkers;
-
-    this.isRendered = true;
-  }
-
-  showToast(error) {
-    const event = new ShowToastEvent({
-      title: this.ERROR_TITLE,
-      message: error.body.message,
-      variant: this.ERROR_VARIANT
-    });
-    this.dispatchEvent(event);
+    this.isLoading = false;
   }
 }

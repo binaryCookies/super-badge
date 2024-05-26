@@ -16,6 +16,9 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
   @track selectedBoatTypeId = "";
   @track searchOptions = [];
 
+  // Try boatTypeId of the menu item selected (the id of the boat type ex. {Name: 'House Boat', Id: 'a01aj00000HnGCFAA3'} etc.)
+  @track boatTypeId = "";
+
   /**
    * Required as per documentation:
    * handleLoading,
@@ -81,27 +84,30 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
     let boats;
     const boatTypeId = event && event.detail ? event.detail.boatTypeId : "";
 
-    // Query the boatSearchResults component
+    console.log("Event Detail:", event.detail); // returns empty object
+    console.log("searchBoats method called with boatTypeId:", boatTypeId); // returns the id of the boat type
+
+    /**
+     * @description The boatSearchResultsComponent is a reference to the c-boat-search-results component.
+     * To get access to the boatSearchResults component and call the searchBoats method
+     */
     const boatSearchResultsComponent = this.template.querySelector(
       "c-boat-search-results"
     );
     if (boatSearchResultsComponent) {
-      boatSearchResultsComponent.boatTypeId = boatTypeId;
+      boatSearchResultsComponent.boatTypeId = boatTypeId || "";
     }
 
-    // Dispatch loading event
     this.dispatchEvent(new CustomEvent("loading"));
 
     try {
       boats = await getBoats({ boatTypeId });
-      console.log("Boats. fn: searchBoats:", boats);
+      console.log("Boats. fn: searchBoats:", boats); // logs the list of boats
 
-      // Update boatSearchResults component with new boats data
-      if (boatSearchResultsComponent) {
-        boatSearchResultsComponent.searchBoats(boatTypeId);
-      }
+      // if (boatSearchResultsComponent) {
+      //   boatSearchResultsComponent.searchBoats(boatTypeId); // error not a function
+      // }
 
-      // Dispatch search event with boats data
       const searchEvent = new CustomEvent("search", {
         detail: { boats }
       });
@@ -109,14 +115,15 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
 
       return boats;
     } catch (error) {
-      console.error("Error fetching boats:", error);
+      console.error(
+        `Error fetching boats for boatTypeId ${boatTypeId}:`,
+        error.message,
+        error.stack
+      );
     } finally {
       this._isLoading = false;
-      // Dispatch doneLoading event
       this.dispatchEvent(new CustomEvent("doneloading"));
     }
-
-    return boats;
   }
 
   // Creates a new boat
