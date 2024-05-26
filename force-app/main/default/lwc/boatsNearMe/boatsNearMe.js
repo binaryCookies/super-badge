@@ -9,6 +9,7 @@ import {
   APPLICATION_SCOPE
 } from "lightning/messageService";
 
+import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import { refreshApex } from "@salesforce/apex";
 
 const LABEL_YOU_ARE_HERE = "You are here!";
@@ -16,8 +17,15 @@ const ICON_STANDARD_USER = "standard:user";
 const ERROR_TITLE = "Error loading Boats Near Me";
 const ERROR_VARIANT = "error";
 
+/**
+ * TODO
+ ** We can't find the variables boatTypeId, mapMarkers, isLoading
+ ** instantiated correctly in the component
+ ** boatsNearMe JavaScript file.
+ */
 export default class BoatsNearMe extends LightningElement {
-  @track boatTypeId;
+  @track boatTypeId = "";
+  @track boatTypeId2 = "";
   @track mapMarkers = [];
   @track isLoading = true;
   @track isRendered = false;
@@ -36,6 +44,23 @@ export default class BoatsNearMe extends LightningElement {
   @wire(MessageContext) messageContext;
 
   /**
+   * connectedCallback a lifecycle hook.
+   * connectedCallback() is called when the component is inserted into the DOM.
+   * Handle the boatdata event to update map markers
+   *
+   * Does not need to be explicitly called
+   */
+
+  connectedCallback() {
+    this.subscribeToMessageChannel();
+    console.log(
+      "BoatsNearMe connectedCallback",
+
+      { boatTypeId: this.boatTypeId }
+    );
+  }
+
+  /**
    * Subscribe to the message channel
    * Receives selected boatId and boat object from message
    */
@@ -45,12 +70,44 @@ export default class BoatsNearMe extends LightningElement {
         this.messageContext,
         BOATMC,
         (message) => {
-          this.boats = message;
-          this.boatTypeId = message.boatData.id;
-          console.log(
-            "BOATS NEAR ME event data received in handleMessage:",
-            message
-          );
+          console.log("Received message:", message);
+
+          // Verify that the message.boatData is an array and has at least one element
+          if (
+            message.boatData &&
+            Array.isArray(message.boatData) &&
+            message.boatData.length > 0
+          ) {
+            this.boats = message.boatData;
+
+            // Ensure each boat object has the expected structure
+            const firstBoat = message.boatData[0];
+            console.log("First boat:", firstBoat);
+
+            if (
+              firstBoat &&
+              firstBoat.BoatType__r &&
+              firstBoat.BoatType__r.Id
+            ) {
+              this.boatTypeId = firstBoat.BoatType__r.Id;
+              console.log(
+                "BOATS NEAR ME event data received in handleMessage:",
+                message
+              );
+              console.log("Extracted boatTypeId:", this.boatTypeId);
+            } else {
+              console.error(
+                "Boat object does not have expected BoatType__r structure:",
+                firstBoat
+              );
+            }
+          } else {
+            console.error(
+              "Received message is not in the expected format or is empty:",
+              message
+            );
+          }
+
           // Trigger wire method update
           refreshApex(this.wiredBoatsJSON);
         },
@@ -78,35 +135,51 @@ export default class BoatsNearMe extends LightningElement {
   @wire(getBoatsByLocation, {
     latitude: "$latitude",
     longitude: "$longitude",
-    boatTypeId: "a01aj00000HnGCDAA3"
-    // boatTypeId: "$boatTypeId"
+    // boatTypeId: "a01aj00000HnGCDAA3"
+    boatTypeId: "$boatTypeId"
   })
   wiredBoatsJSON({ error, data }) {
+    this.isLoading = false;
     if (error) {
+      this.showToast(ERROR_TITLE, error.body.message, ERROR_VARIANT);
       console.error("Error in wiredBoatsJSON:", error);
       return;
     }
 
-    // Check result - should be an array of boat objects
-    if (data) console.log("fn wiredBoatsJSON: boats near me:", data);
-
-    // Try to parse the JSON string into an array
-    try {
-      const boatData = JSON.parse(data);
-      this.createMapMarkers(boatData);
-    } catch (e) {
-      console.error("Invalid JSON:", data);
+    if (data) {
+      console.log("fn wiredBoatsJSON: boats near me:", data);
+      try {
+        const boatData = JSON.parse(data);
+        this.createMapMarkers(boatData);
+      } catch (err) {
+        console.error("Error processing data:", err);
+        this.showToast(err);
+      }
     }
-    this.isLoading = false;
   }
 
-  // Controls the isRendered property
-  // Calls getLocationFromBrowser()
-  //   async renderedCallback() {
-  //     if (this.isRendered) return;
-  //     this.isRendered = true;
-  //     await this.getLocationFromBrowser();
-  //   }
+  /**
+   *`RenderedCallback` that gets the location from the browser
+   * LWC lifecycle hook that is called after the component is rendered
+   * Automatically calls `getLocationFromBrowser()` does not need to be explictly called
+   *
+   * Why: We want to get the location from the browser only once, when the component is rendered
+   *
+   * @Boolean isRendered - flag to check if the component has been rendered
+   * @method getLocationFromBrowser - async method leveraging GeoNavigator API to get the location from the browser
+   * @returns {Promise} - returns a promise that resolves a lng/lat position when the location is fetched
+   */
+  async renderedCallback() {
+    if (this.isRendered) return;
+
+    try {
+      await this.getLocationFromBrowser();
+      console.log("Location from browser:", this.latitude, this.longitude);
+      this.isRendered = true; // Set isRendered to true after location is fetched and map is rendered
+    } catch (error) {
+      console.error("Error getting location from browser:", error);
+    }
+  }
 
   /**
    * Complete the method named getLocationFromBrowser().
@@ -117,9 +190,9 @@ export default class BoatsNearMe extends LightningElement {
    * to get the location from the browser only if the map has not been rendered yet.
    * Use the property isRendered.
    */
-  // Gets the location from the Browser
-  // position => {latitude and longitude}
   getLocationFromBrowser() {
+    if (this.isRendered) return;
+
     return new Promise((resolve, reject) => {
       const geolocation = navigator.geolocation;
       if (!geolocation) {
@@ -139,27 +212,6 @@ export default class BoatsNearMe extends LightningElement {
         }
       );
     });
-  }
-
-  /**
-   * Handle the boatdata event to update map markers
-   */
-
-  connectedCallback() {
-    this.subscribeToMessageChannel();
-
-    this.getLocationFromBrowser()
-      .then(() => {
-        console.log(
-          "Location from browser:",
-          this.latitude,
-          this.longitude
-          // this.boats // undefined
-        );
-      })
-      .catch((error) => {
-        console.error("Error getting location from browser:", error);
-      });
   }
 
   // Creates the map markers
@@ -210,5 +262,16 @@ export default class BoatsNearMe extends LightningElement {
 
     // Set the mapMarkers property
     this.mapMarkers = newMarkers;
+
+    this.isRendered = true;
+  }
+
+  showToast(error) {
+    const event = new ShowToastEvent({
+      title: this.ERROR_TITLE,
+      message: error.body.message,
+      variant: this.ERROR_VARIANT
+    });
+    this.dispatchEvent(event);
   }
 }
