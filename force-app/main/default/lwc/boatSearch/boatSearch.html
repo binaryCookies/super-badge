@@ -22,13 +22,12 @@
     <!-- Bottom -->
     <lightning-layout-item size="12" class="slds-p-top_small slds-is-relative">
       <!-- Spinner -->
-      <lightning-spinner
-        alternative-text="Loading"
-        if:true={isLoading}
-      ></lightning-spinner>
+      <template if:true={isLoading}>
+        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+      </template>
       <!-- boatSearchResults goes here -->
       <c-boat-search-results
-        onboatselect={handleBoatSelect}
+        onboatselect={updateSelectedTile}
         onloading={handleLoading}
         ondoneloading={handleDoneLoading}
       ></c-boat-search-results>
