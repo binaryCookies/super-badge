@@ -31,9 +31,25 @@ const ERROR_VARIANT = "error";
  * 
  * - Custom event 'loading' and 'doneloading' are dispatched - 
  *      use isLoading private property to dispatch these events as needed
+ * 
+ * We can’t find the correct settings for the method searchBoats() in 
+ * the component boatSearchResults JavaScript file. 
+ * Make sure the method was created according to the requirements, 
+ * using the correct decorator, the notify loading, and boat type Id
 
  */
 
+/**
+ * TODO
+ * We can’t find the right settings for the lightning-tabset in the
+ * component boatSearchResults.
+ * Make sure the component was created according to the requirements.
+ *
+ * We can’t find the right settings for the lightning-layout-item inside
+ * the Gallery tab, in the component boatSearchResults.
+ * Make sure the component was created according to the requirements,
+ * including the style, keys, and item used in the iteration for each boat tile.
+ */
 export default class BoatSearchResults extends LightningElement {
   // Store result of getBoats() in boats component attribute
   @track boats = [];
@@ -163,8 +179,14 @@ export default class BoatSearchResults extends LightningElement {
       const payload = { boatData: data };
       publish(this.messageContext, BOATMC, payload);
     } else if (error) {
-      this.error = error;
       this.boats = undefined;
+      this.dispatchEvent(
+        new ShowToastEvent({
+          title: ERROR_TITLE,
+          message: error.body.message,
+          variant: ERROR_VARIANT
+        })
+      );
     }
     this._isLoading = false;
   }
@@ -172,9 +194,7 @@ export default class BoatSearchResults extends LightningElement {
   // Handle the boatselect event
   handleBoatSelect(event) {
     this.selectedBoatId = event.detail.boatId;
-    console.log("Selected boat ID from custom event:", this.selectedBoatId, {
-      detail: event.detail
-    });
+    this.updateSelectedTile();
   }
 
   /**
@@ -188,8 +208,12 @@ export default class BoatSearchResults extends LightningElement {
    */
   sendMessageService(event) {
     // assign boat.Id to boatId and then add it to a custom event named boatselect
-    const boatId = event.detail.boatId;
-    publish(this.messageContext, BOATMC, { recordId: boatId });
+    // const boatId = event.detail.boatId;
+    // publish(this.messageContext, BOATMC, { recordId: boatId });
+
+    publish(this.messageContext, BOATMC, {
+      recordId: this.selectedBoatId
+    });
   }
 
   /**
@@ -224,7 +248,14 @@ export default class BoatSearchResults extends LightningElement {
    * this function must update selectedBoatId and call sendMessageService
    * TODO
    */
-  updateSelectedTile() {}
+  updateSelectedTile(event) {
+    // const boatTiles = this.template.querySelectorAll("c-boat-tile");
+    // boatTiles.forEach((tile) => {
+    //   tile.selectedBoatId = this.selectedBoatId;
+    // });
+    this.selectedBoatId = event.detail.boatId;
+    this.sendMessageService(this.selectedBoatId);
+  }
 
   // The handleSave method must save the changes in the Boat Editor
   // passing the updated fields from draftValues to the

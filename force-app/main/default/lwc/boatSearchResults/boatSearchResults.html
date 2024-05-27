@@ -19,26 +19,24 @@ size="4" is added to lightning-layout-item to specify the width of each item.
   <lightning-tabset variant="scoped">
     <lightning-tab label="Gallery">
       <div class="slds-scrollable_y">
-        <!-- layout horizontally aligned to the center  -->
-        <!-- layout allowing multiple rows -->
         <lightning-layout multiple-rows="true" horizontal-align="center">
-          <!-- template looping through each boat -->
-          <template for:each={boats} for:item="boat">
-            <lightning-layout-item
-              key={boat.Id}
-              size="12"
-              small-device-size="6"
-              medium-device-size="4"
-              large-device-size="3"
-              class="slds-p-around_small"
-            >
-              <c-boat-tile
+          <template if:true={boats}>
+            <template for:each={boats} for:item="boat">
+              <lightning-layout-item
                 key={boat.Id}
-                boat={boat}
-                selected-boat-id={selectedBoatId}
-                onboatselect={handleBoatSelect}
-              ></c-boat-tile>
-            </lightning-layout-item>
+                size="12"
+                small-device-size="6"
+                medium-device-size="4"
+                large-device-size="3"
+                padding="around-small"
+              >
+                <c-boat-tile
+                  boat={boat}
+                  selected-boat-id={selectedBoatId}
+                  onboatselect={updateSelectedTile}
+                ></c-boat-tile>
+              </lightning-layout-item>
+            </template>
           </template>
         </lightning-layout>
       </div>
@@ -58,7 +56,12 @@ size="4" is added to lightning-layout-item to specify the width of each item.
     </lightning-tab>
     <lightning-tab label="Boats Near Me">
       <!-- boatsNearMe component goes here -->
-      <c-boats-near-me boats={boats}></c-boats-near-me>
+      <!-- <c-boats-near-me boats={boats}></c-boats-near-me> -->
+      <c-boats-near-me boat-type-id={boatTypeId}></c-boats-near-me>
     </lightning-tab>
   </lightning-tabset>
+
+  <template if:true={isLoading}>
+    <lightning-spinner alternative-text="Loading"></lightning-spinner>
+  </template>
 </template>

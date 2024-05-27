@@ -33,7 +33,7 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
    * @description: Uses private property _isLoading to track changes to the isLoading attribute.
    *
    */
-  @api
+
   handleLoading() {
     // Set a loading attribute to true
     this._isLoading = true;
@@ -45,7 +45,7 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
    * @description: Uses private property _isLoading to track changes to the isLoading attribute.
    *
    */
-  @api
+
   handleDoneLoading() {
     // Reset the loading attribute to false
     this._isLoading = false;
@@ -78,9 +78,10 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
    *
    * @returns {Promise<Array>} A promise that resolves to the list of boats.
    */
-  @api
+
+  // ORIGIAL CODE ========================================================
   async searchBoats(event) {
-    this._isLoading = true;
+    this.handleLoading();
     let boats;
     const boatTypeId = event && event.detail ? event.detail.boatTypeId : "";
 
@@ -121,7 +122,7 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
         error.stack
       );
     } finally {
-      this._isLoading = false;
+      this.handleDoneLoading();
       this.dispatchEvent(new CustomEvent("doneloading"));
     }
   }
