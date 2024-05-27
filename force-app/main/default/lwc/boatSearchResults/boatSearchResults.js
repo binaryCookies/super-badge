@@ -42,8 +42,7 @@ export default class BoatSearchResults extends LightningElement {
 
   @track _isLoading = false;
 
-  // For boatTile component - debug
-  @api boatTypeId = "";
+  boatTypeId = "";
   @track selectedBoatId;
 
   // Refresh Apex with boatId
@@ -78,6 +77,15 @@ export default class BoatSearchResults extends LightningElement {
       "boatselect",
       this.handleBoatSelectEvent.bind(this)
     );
+  }
+
+  // public function that updates the existing boatTypeId property
+  // uses notifyLoading
+  @api
+  searchBoats(boatTypeId) {
+    this.isLoading = true;
+    this.notifyLoading(this.isLoading);
+    this.boatTypeId = boatTypeId;
   }
 
   /**
