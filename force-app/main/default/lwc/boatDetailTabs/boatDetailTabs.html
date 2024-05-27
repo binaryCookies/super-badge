@@ -1,0 +1,39 @@
+<template>
+  <template if:false={wiredRecord.data}>
+    <!-- lightning card for the label when wiredRecord has no data goes here  -->
+    <span class="slds-align_absolute-center no-boat-height"
+      >{labelPleaseSelectABoat}</span
+    >
+  </template>
+  <template if:true={wiredRecord.data}>
+    <!-- lightning card for the content when wiredRecord has data goes here  -->
+    <lightning-tabset variant="scoped">
+      <lightning-tab lightning-tab label="Details">
+        <lightning-card title={boatName} icon-name={detailsTabIconName}>
+          <div class="slds-p-around_medium">
+            <lightning-record-view-form
+              record-id={boatId}
+              object-api-name="Boat__c"
+              density="compact"
+              columns="2"
+              fields={BOAT_FIELDS}
+            >
+              <template for:each={BOAT_FIELDS} for:item="field">
+                <lightning-output-field
+                  key={field.fieldApiName}
+                  field-name={field.fieldApiName}
+                ></lightning-output-field>
+              </template>
+            </lightning-record-view-form>
+          </div>
+          <div slot="actions">
+            <lightning-button
+              label={label.labelFullDetails}
+              onclick={navigateToRecordViewPage}
+            ></lightning-button>
+          </div>
+        </lightning-card>
+      </lightning-tab>
+    </lightning-tabset>
+  </template>
+</template>

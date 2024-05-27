@@ -4,7 +4,7 @@
 // import COMMENT_FIELD from schema - BoatReview__c.Comment__c
 export default class BoatAddReviewForm extends LightningElement {
   // Private
-  boatId;
+
   rating;
   boatReviewObject = BOAT_REVIEW_OBJECT;
   nameField = NAME_FIELD;

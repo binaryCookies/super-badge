@@ -19,11 +19,31 @@ export default class FiveStarRating extends LightningElement {
   }
 
   renderedCallback() {
-    if (this.isRendered) {
-      return;
-    }
-    this.loadScript();
+    if (this.isRendered) return;
+
+    // Inform other components that the rating is rendered
+    this.dispatchEvent(
+      new CustomEvent("ratingrendered", { detail: { rating: this.value } })
+    );
+
     this.isRendered = true;
+
+    Promise.all([
+      loadScript(this, fivestar + "/rating.js"),
+      loadStyle(this, fivestar + "/rating.css")
+    ])
+      .then(() => {
+        this.initializeRating();
+      })
+      .catch((error) => {
+        this.dispatchEvent(
+          new ShowToastEvent({
+            title: ERROR_TITLE,
+            message: error.body.message,
+            variant: ERROR_VARIANT
+          })
+        );
+      });
   }
 
   loadScript() {
