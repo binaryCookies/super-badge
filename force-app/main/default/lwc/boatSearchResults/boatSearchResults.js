@@ -1,11 +1,5 @@
 import { LightningElement, track, wire, api } from "lwc";
-import {
-  subscribe,
-  unsubscribe,
-  publish,
-  MessageContext,
-  APPLICATION_SCOPE
-} from "lightning/messageService";
+import { publish, MessageContext } from "lightning/messageService";
 import getBoats from "@salesforce/apex/BoatDataService.getBoats";
 import BOATMC from "@salesforce/messageChannel/BoatMessageChannel__c";
 import updateBoatList from "@salesforce/apex/BoatDataService.updateBoatList";
@@ -36,7 +30,7 @@ const ERROR_VARIANT = "error";
 
 export default class BoatSearchResults extends LightningElement {
   // Store result of getBoats() in boats component attribute
-  @track boats = [];
+  @track boats;
   @track boat; // boat object for the boatTile.selectBoat Event
   @track error;
 
@@ -71,12 +65,9 @@ export default class BoatSearchResults extends LightningElement {
   subscription = null;
 
   connectedCallback() {
-    this.subscribeToMessageChannel();
+    // this.subscribeToMessageChannel();
     // Listen for the boatselect event
-    this.template.addEventListener(
-      "boatselect",
-      this.handleBoatSelectEvent.bind(this)
-    );
+    console.log("BoatSearchResults connectedCallback lifecycle hook");
   }
 
   // public function that updates the existing boatTypeId property
@@ -88,76 +79,6 @@ export default class BoatSearchResults extends LightningElement {
     this.boatTypeId = boatTypeId;
   }
 
-  /**
-   * Subscribe to the message channel to retrieve the data published to
-   * the channel
-   * @returns {object} subscription object `recordId` and `boat` object
-   */
-  subscribeToMessageChannel() {
-    if (!this.subscription) {
-      this.subscription = subscribe(
-        this.messageContext,
-        BOATMC,
-        (message) => this.handleMessage(message),
-        { scope: APPLICATION_SCOPE }
-      );
-    }
-  }
-
-  /**
-   * unsubscribe from the message channel
-   */
-
-  unsubscribeToMessageChannel() {
-    unsubscribe(this.subscription);
-    this.subscription = null;
-  }
-
-  /**
-   * TODO event.detail is empty
-   * @param {string} event the event name to handle the boat select event
-   */
-  handleBoatSelectEvent(event) {
-    console.log("Event received in boatSearchResults:", event.detail);
-    this.selectedBoatId = event.detail.boatId;
-    // Additional logic to handle the selected boat
-    const message = this.subscribeToMessageChannel();
-    console.log(
-      "Boat ID and Boat Data from boatselect event:",
-      this.boat,
-      this.selectedBoatId
-    );
-  }
-
-  /**
-   * Handler for when a message is received from selectBoat()
-   * @param {object} message published message from BOATMC message channel containing the boatId and boat object from Boat__c
-   * @returns
-   */
-  handleMessage(message) {
-    console.log(
-      "Message received From Boat Tile boatTile.selectBoat:",
-      message
-    );
-    this.selectedBoatId = message.recordId;
-    // Additional logic to handle the message
-
-    const boatData = message.boatData;
-    const recordId = message.recordId;
-    const boatName = boatData.Name;
-    // TODO boat name to be displayed in the map marker/tile
-    // console.log(
-    //   "Boat data received in handleMessage:",
-    //   boatName,
-    //   boatData,
-    //   recordId
-    // );
-
-    // Update the selected boat Id
-    this.boat = boatData;
-    this.recordId = recordId;
-  }
-
   // Passes boatTypeId to the getBoats() method
   @wire(getBoats, { boatTypeId: "$boatTypeId" })
   wiredBoats({ error, data }) {
@@ -167,21 +88,11 @@ export default class BoatSearchResults extends LightningElement {
       this.error = undefined;
 
       // publish the boatData object to the BoatMC message channel
-      const payload = { boatData: data };
-      publish(this.messageContext, BOATMC, payload);
     } else if (error) {
       this.error = error;
       this.boats = undefined;
     }
     this._isLoading = false;
-  }
-
-  // Handle the boatselect event
-  handleBoatSelect(event) {
-    this.selectedBoatId = event.detail.boatId;
-    console.log("Selected boat ID from custom event:", this.selectedBoatId, {
-      detail: event.detail
-    });
   }
 
   /**
@@ -193,9 +104,9 @@ export default class BoatSearchResults extends LightningElement {
    *
    * REQUIRED: explicitly pass boatId to the parameter recordId
    */
-  sendMessageService(event) {
+  sendMessageService(boatId) {
     // assign boat.Id to boatId and then add it to a custom event named boatselect
-    const boatId = event.detail.boatId;
+    // const boatId = event.detail.boatId;
     publish(this.messageContext, BOATMC, { recordId: boatId });
   }
 
@@ -232,65 +143,56 @@ export default class BoatSearchResults extends LightningElement {
    * this function must update selectedBoatId and call sendMessageService
    * TODO
    */
-  updateSelectedTile() {}
+  updateSelectedTile(event) {
+    this.selectedBoatId = event.detail.boatId;
+    this.sendMessageService(this.selectedBoatId);
+  }
 
   // The handleSave method must save the changes in the Boat Editor
   // passing the updated fields from draftValues to the
   // Apex method updateBoatList(Object data).
   // Show a toast message with the title
   // clear lightning-datatable draft values
-  async handleSave(event) {
-    try {
-      // notify loading
-      this.notifyLoading(true);
-      const updatedFields = event.detail.draftValues;
-      console.log("Draft values: ", updatedFields);
+  handleSave(event) {
+    this.notifyLoading(true);
 
-      const processedFieldValues = updatedFields.map((record) => {
-        let fields = {};
-        fields.Id = record.Id;
-        fields.Name = record.Name;
-        fields.Length__c = record.Length__c;
-        fields.Price__c = record.Price__c;
-        fields.Description__c = record.Description__c;
-        return fields;
+    const updatedFields = event.detail.draftValues;
+
+    updateBoatList({ data: updatedFields })
+      .then((data) => {
+        this.dispatchEvent(
+          new ShowToastEvent({
+            title: SUCCESS_TITLE,
+
+            message: MESSAGE_SHIP_IT,
+
+            variant: SUCCESS_VARIANT
+          })
+        );
+
+        this.draftValues = [];
+
+        return this.refresh();
+      })
+      .catch((error) => {
+        this.error = error;
+
+        this.dispatchEvent(
+          new ShowToastEvent({
+            title: ERROR_TITLE,
+
+            message: error.body.message,
+
+            variant: ERROR_VARIANT
+          })
+        );
+
+        this.notifyLoading(false);
+      })
+
+      .finally(() => {
+        this.draftValues = [];
       });
-      // Update the records via Apex
-      await updateBoatList({ data: processedFieldValues })
-        .then(() => {
-          this.notifyLoading(false);
-
-          // Show success messsage
-          this.dispatchEvent(
-            new ShowToastEvent({
-              title: SUCCESS_TITLE,
-              message: MESSAGE_SHIP_IT,
-              variant: SUCCESS_VARIANT
-            })
-          );
-          this.refresh();
-        })
-        .catch((error) => {
-          this.notifyLoading(false);
-
-          // Show error message
-          this.dispatchEvent(
-            new ShowToastEvent({
-              title: ERROR_TITLE,
-              message: error.body.message,
-              variant: ERROR_VARIANT
-            })
-          );
-        })
-        .finally(() => {
-          // Clear draft values after saving
-          const datatable = this.template.querySelector("lightning-datatable");
-
-          if (datatable) datatable.draftValues = [];
-        });
-    } catch (error) {
-      console.error("Error in handleSave:", error);
-    }
   }
 
   // Check the current value of isLoading before dispatching the doneloading or loading custom event

@@ -67,38 +67,24 @@ export default class BoatsNearMe extends LightningElement {
           console.log("Received message:", message);
 
           // Verify that the message.boatData is an array and has at least one element
-          if (
-            message.boatData &&
-            Array.isArray(message.boatData) &&
-            message.boatData.length > 0
-          ) {
-            this.boats = message.boatData;
 
-            // Ensure each boat object has the expected structure
-            const firstBoat = message.boatData[0];
-            console.log("First boat:", firstBoat);
+          this.boats = message.boatData;
 
-            if (
-              firstBoat &&
-              firstBoat.BoatType__r &&
-              firstBoat.BoatType__r.Id
-            ) {
-              this.boatTypeId = firstBoat.BoatType__r.Id;
-              console.log(
-                "BOATS NEAR ME event data received in handleMessage:",
-                message
-              );
-              console.log("Extracted boatTypeId:", this.boatTypeId);
-            } else {
-              console.error(
-                "Boat object does not have expected BoatType__r structure:",
-                firstBoat
-              );
-            }
+          // Ensure each boat object has the expected structure
+          const firstBoat = message.boatData[0];
+          console.log("First boat:", firstBoat);
+
+          if (firstBoat && firstBoat.BoatType__r && firstBoat.BoatType__r.Id) {
+            this.boatTypeId = firstBoat.BoatType__r.Id;
+            console.log(
+              "BOATS NEAR ME event data received in handleMessage:",
+              message
+            );
+            console.log("Extracted boatTypeId:", this.boatTypeId);
           } else {
             console.error(
-              "Received message is not in the expected format or is empty:",
-              message
+              "Boat object does not have expected BoatType__r structure:",
+              firstBoat
             );
           }
 
