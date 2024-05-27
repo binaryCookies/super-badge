@@ -161,7 +161,6 @@ export default class BoatSearchResults extends LightningElement {
   // Passes boatTypeId to the getBoats() method
   @wire(getBoats, { boatTypeId: "$boatTypeId" })
   wiredBoats({ error, data }) {
-    this.wiredBoatResults = { error, data };
     if (data) {
       this.boats = data;
       // console.log("boatSearchResults. Boats data, wiredBoats: ", data);
@@ -210,7 +209,8 @@ export default class BoatSearchResults extends LightningElement {
   @api async refresh() {
     if (this.notifyLoading(true)) this.handleLoading();
     try {
-      await refreshApex(this.wiredBoatResults);
+      // await refreshApex(this.wiredBoatResults);
+      await refreshApex(this.boats);
     } catch (error) {
       console.error("Error in refresh, boatSearchResults.js:", error);
     }
