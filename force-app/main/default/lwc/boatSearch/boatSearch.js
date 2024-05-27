@@ -11,7 +11,7 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
    * track state by declaring private properties
    * isLoading: Tracks changes to the isLoading attribute.
    */
-  @track _isLoading = false;
+  @track isLoading = false;
 
   @track selectedBoatTypeId = "";
   @track searchOptions = [];
@@ -33,10 +33,10 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
    * @description: Uses private property _isLoading to track changes to the isLoading attribute.
    *
    */
-  @api
+
   handleLoading() {
     // Set a loading attribute to true
-    this._isLoading = true;
+    this.isLoading = true;
   }
 
   /**
@@ -45,10 +45,10 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
    * @description: Uses private property _isLoading to track changes to the isLoading attribute.
    *
    */
-  @api
+
   handleDoneLoading() {
     // Reset the loading attribute to false
-    this._isLoading = false;
+    this.isLoading = false;
   }
 
   /**
@@ -59,7 +59,7 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
    */
   @api
   get isLoading() {
-    return this._isLoading;
+    return this.isLoading;
   }
 
   /**
