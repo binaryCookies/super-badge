@@ -8,7 +8,7 @@
   <template if:true={wiredRecord}>
     <!-- lightning card for the content when wiredRecord has data goes here  -->
     <lightning-tabset variant="scoped">
-      <lightning-tab lightning-tab label="Details">
+      <lightning-tab label="Details">
         <lightning-card title={boatName} icon-name={detailsTabIconName}>
           <div class="slds-p-around_medium">
             <lightning-record-view-form
@@ -39,6 +39,12 @@
             ></lightning-button>
           </div>
         </lightning-card>
+      </lightning-tab>
+      <lightning-tab label="Reviews">
+        <c-boat-reviews boat={boatId}></c-boat-reviews>
+      </lightning-tab>
+      <lightning-tab label="Add Review">
+        <c-boat-add-review-form boat={boatId}></c-boat-add-review-form>
       </lightning-tab>
     </lightning-tabset>
   </template>

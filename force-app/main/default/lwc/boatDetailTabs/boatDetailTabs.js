@@ -140,7 +140,8 @@ export default class BoatDetailTabs extends NavigationMixin(LightningElement) {
     }
     const boatReviews = this.template.querySelector("c-boat-reviews");
     if (boatReviews) {
-      boatReviews.refreshReviews();
+      boatReviews.refresh();
+      // boatReviews.refreshReviews();
     }
   }
 }
