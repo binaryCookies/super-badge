@@ -34,19 +34,16 @@ const TILE_WRAPPER_UNSELECTED_CLASS = "tile-wrapper";
  * showing the boat picture from the field Picture__c on the Boat__c object.
  */
 
+/**
+ * @class BoatTile
+ * @description Represents a boat tile component.
+ */
 export default class BoatTile extends LightningElement {
   @api selectedBoatId;
   @api boat;
 
   @wire(MessageContext)
   messageContext;
-
-  // handleBoatSelected(message) {
-  //   const boatId = message.boatId;
-  //   console.log("Boat ID received:", boatId);
-  //   // Fetch the boat details using boatId
-  //   this.getBoat(boatId);
-  // }
 
   /**
    * Getter for dynamically setting the background image for the picture.

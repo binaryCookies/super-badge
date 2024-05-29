@@ -1,3 +1,12 @@
+<!--
+    This component represents a section that displays a list of similar boats.
+    It uses a lightning-card to display the section title and an icon.
+    The list of similar boats is rendered using a lightning-layout with multiple rows.
+    If there are no related boats, a message is displayed.
+    Each boat is displayed using a lightning-layout-item with responsive sizing.
+    The boat details are rendered using the c-boat-tile component.
+-->
+
 <template>
   <lightning-card title={getTitle} icon-name="custom:custom54">
     <lightning-layout multiple-rows="true">

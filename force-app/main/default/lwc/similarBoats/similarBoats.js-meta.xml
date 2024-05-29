@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <!-- The Lightning Component Bundle metadata file for the Similar Boats component -->
     <apiVersion>60.0</apiVersion>
     <isExposed>true</isExposed>
     <targets>
+        <!-- The targets where the component can be used -->
         <target>lightning__RecordPage</target> 
         <target>lightning__AppPage</target> 
     </targets>
-        <targetConfigs>
+    <targetConfigs>
         <targetConfig targets="lightning__RecordPage">
+            <!-- The configuration for the component when used on a record page -->
             <property
         name="similarBy"
         type="String"
@@ -15,6 +18,7 @@
         datasource="Type,Price,Length"
       />
             <objects>
+                <!-- The objects that the component is associated with -->
                 <object>Boat__c</object>
             </objects>
         </targetConfig>
