@@ -46,42 +46,43 @@ import { NavigationMixin } from "lightning/navigation";
 export default class BoatDetailTabs extends NavigationMixin(LightningElement) {
   @api boatId; // set by parent component
   @api boat;
+
   wiredRecord;
 
   label = {
     labelDetails,
     labelReviews,
     labelAddReview,
-    labelFullDetails,
-    labelPleaseSelectABoat
+    labelFullDetails
   };
 
   @wire(MessageContext) messageContext;
   // Sounde, a02aj000001UFR4AAO
   // @wire(getRecord, { recordId: "$boatId", fields: BOAT_FIELDS })
   @wire(getRecord, { recordId: "$boatId", fields: BOAT_FIELDS })
-  wiredBoat(response) {
-    const { data, error } = response;
-    if (data) {
-      console.log("boatDetailsTab.jswiredBoat data:", data);
-      this.wiredRecord = data;
-      this.error = undefined;
-    } else if (error) {
-      console.log("boatDetailsTab.jswiredBoat error:", error);
-      this.error = error;
-      this.wiredRecord = undefined;
-    }
-  }
+  wiredRecord;
+  // wiredBoat(response) {
+  //   const { data, error } = response;
+  //   if (data) {
+  //     console.log("boatDetailsTab.jswiredBoat data:", data);
+  //     this.wiredRecord = data;
+  //     this.error = undefined;
+  //   } else if (error) {
+  //     console.log("boatDetailsTab.jswiredBoat error:", error);
+  //     this.error = error;
+  //     this.wiredRecord = undefined;
+  //   }
+  // }
   // Decide when to show or hide the icon
   // returns 'utility:anchor' or null
   get detailsTabIconName() {
     console.log("detailsTabIconName called");
-    return this.wiredRecord ? "utility:anchor" : null;
+    return this.wiredRecord.data ? "utility:anchor" : null;
   }
 
   // Utilize getFieldValue to extract the boat name from the record wire
   get boatName() {
-    const fieldName = getFieldValue(this.wiredRecord, BOAT_NAME_FIELD);
+    const fieldName = getFieldValue(this.wiredRecord.data, BOAT_NAME_FIELD);
     console.log("boatName called fieldName:", fieldName);
     return fieldName;
   }
@@ -123,7 +124,7 @@ export default class BoatDetailTabs extends NavigationMixin(LightningElement) {
   navigateToRecordViewPage() {
     console.log("navigateToRecordViewPage called");
     this[NavigationMixin.Navigate]({
-      type: "standard__objectPage",
+      type: "standard__recordPage",
       attributes: {
         recordId: this.boatId,
         objectApiName: "Boat__c",
@@ -133,15 +134,9 @@ export default class BoatDetailTabs extends NavigationMixin(LightningElement) {
   }
 
   // Navigates back to the review list, and refreshes reviews component
-  handleReviewCreated(event) {
-    const tabset = this.template.querySelector("lightning-tabset");
-    if (tabset) {
-      tabset.activeTabValue = "reviews";
-    }
-    const boatReviews = this.template.querySelector("c-boat-reviews");
-    if (boatReviews) {
-      boatReviews.refresh();
-      // boatReviews.refreshReviews();
-    }
+  handleReviewCreated() {
+    this.template.querySelector("lightning-tabset").activeTabValue = "reviews";
+
+    this.template.querySelector("c-boat-reviews").refresh();
   }
 }
