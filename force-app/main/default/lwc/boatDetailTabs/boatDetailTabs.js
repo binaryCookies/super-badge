@@ -53,7 +53,8 @@ export default class BoatDetailTabs extends NavigationMixin(LightningElement) {
     labelDetails,
     labelReviews,
     labelAddReview,
-    labelFullDetails
+    labelFullDetails,
+    labelPleaseSelectABoat
   };
 
   @wire(MessageContext) messageContext;
@@ -61,20 +62,7 @@ export default class BoatDetailTabs extends NavigationMixin(LightningElement) {
   // @wire(getRecord, { recordId: "$boatId", fields: BOAT_FIELDS })
   @wire(getRecord, { recordId: "$boatId", fields: BOAT_FIELDS })
   wiredRecord;
-  // wiredBoat(response) {
-  //   const { data, error } = response;
-  //   if (data) {
-  //     console.log("boatDetailsTab.jswiredBoat data:", data);
-  //     this.wiredRecord = data;
-  //     this.error = undefined;
-  //   } else if (error) {
-  //     console.log("boatDetailsTab.jswiredBoat error:", error);
-  //     this.error = error;
-  //     this.wiredRecord = undefined;
-  //   }
-  // }
-  // Decide when to show or hide the icon
-  // returns 'utility:anchor' or null
+
   get detailsTabIconName() {
     console.log("detailsTabIconName called");
     return this.wiredRecord.data ? "utility:anchor" : null;
