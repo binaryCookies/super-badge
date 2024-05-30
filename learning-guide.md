@@ -64,8 +64,8 @@ export default class MyComponent extends LightningElement {
 - **Code Example**:
 
 ```javascript
-import { LightningElement, wire } from 'lwc';
-import getContacts from '@salesforce/apex/ContactController.getContacts';
+import { LightningElement, wire } from "lwc";
+import getContacts from "@salesforce/apex/ContactController.getContacts";
 
 export default class ContactList extends LightningElement {
   @wire(getContacts)
@@ -82,7 +82,7 @@ export default class ContactList extends LightningElement {
   <template if:true={contacts.error}>
     <p>{contacts.error}</p>
   </template>
-</template>
+</template>;
 ```
 
 #### 2. **Component Composition and Communication**
@@ -151,8 +151,8 @@ export default class ParentComponent extends LightningElement {
 **Imperative Apex Call**:
 
 ```javascript
-import { LightningElement } from 'lwc';
-import getContacts from '@salesforce/apex/ContactController.getContacts';
+import { LightningElement } from "lwc";
+import getContacts from "@salesforce/apex/ContactController.getContacts";
 
 export default class ImperativeCallExample extends LightningElement {
   contacts;
@@ -160,10 +160,10 @@ export default class ImperativeCallExample extends LightningElement {
 
   handleLoad() {
     getContacts()
-      .then(result => {
+      .then((result) => {
         this.contacts = result;
       })
-      .catch(error => {
+      .catch((error) => {
         this.error = error;
       });
   }
@@ -180,14 +180,14 @@ export default class ImperativeCallExample extends LightningElement {
   <template if:true={error}>
     <p>{error}</p>
   </template>
-</template>
+</template>;
 ```
 
 **Wire Service**:
 
 ```javascript
-import { LightningElement, wire } from 'lwc';
-import getContacts from '@salesforce/apex/ContactController.getContacts';
+import { LightningElement, wire } from "lwc";
+import getContacts from "@salesforce/apex/ContactController.getContacts";
 
 export default class WireServiceExample extends LightningElement {
   @wire(getContacts)
@@ -204,7 +204,7 @@ export default class WireServiceExample extends LightningElement {
   <template if:true={contacts.error}>
     <p>{contacts.error}</p>
   </template>
-</template>
+</template>;
 ```
 
 ##### **Error Handling in Apex**
@@ -234,10 +234,14 @@ public with sharing class ContactController {
 
 ```html
 <template>
-  <lightning-spinner if:true={isLoading} alternative-text="Loading" size="small"></lightning-spinner>
-  <template if:true={contacts}>
-    <template for:each={contacts} for:item="contact">
-      <p key={contact.Id}>{contact.Name}</p>
+  <lightning-spinner
+    if:true="{isLoading}"
+    alternative-text="Loading"
+    size="small"
+  ></lightning-spinner>
+  <template if:true="{contacts}">
+    <template for:each="{contacts}" for:item="contact">
+      <p key="{contact.Id}">{contact.Name}</p>
     </template>
   </template>
 </template>
@@ -251,10 +255,22 @@ public with sharing class ContactController {
 ```html
 <template>
   <lightning-layout multiple-rows="true">
-    <lightning-layout-item padding="around-small" size="12" small-device-size="6" medium-device-size="4" large-device-size="4">
+    <lightning-layout-item
+      padding="around-small"
+      size="12"
+      small-device-size="6"
+      medium-device-size="4"
+      large-device-size="4"
+    >
       <p>Responsive Item 1</p>
     </lightning-layout-item>
-    <lightning-layout-item padding="around-small" size="12" small-device-size="6" medium-device-size="4" large-device-size="4">
+    <lightning-layout-item
+      padding="around-small"
+      size="12"
+      small-device-size="6"
+      medium-device-size="4"
+      large-device-size="4"
+    >
       <p>Responsive Item 2</p>
     </lightning-layout-item>
   </lightning-layout>
@@ -300,16 +316,18 @@ export default class ParentComponent extends LightningElement {
 - **Code Example**:
 
 ```javascript
-import { LightningElement } from 'lwc';
-import { NavigationMixin } from 'lightning/navigation';
+import { LightningElement } from "lwc";
+import { NavigationMixin } from "lightning/navigation";
 
-export default class NavigateToRecordExample extends NavigationMixin(LightningElement) {
+export default class NavigateToRecordExample extends NavigationMixin(
+  LightningElement
+) {
   navigateToRecord() {
     this[NavigationMixin.Navigate]({
-      type: 'standard__recordPage',
+      type: "standard__recordPage",
       attributes: {
-        recordId: '003B00000067RnxIAE',
-        actionName: 'view'
+        recordId: "003B00000067RnxIAE",
+        actionName: "view"
       }
     });
   }
@@ -317,8 +335,11 @@ export default class NavigateToRecordExample extends NavigationMixin(LightningEl
 
 // navigateToRecordExample.html
 <template>
-  <lightning-button label="View Record" onclick={navigateToRecord}></lightning-button>
-</template>
+  <lightning-button
+    label="View Record"
+    onclick={navigateToRecord}
+  ></lightning-button>
+</template>;
 ```
 
 #### 6. **Testing and Debugging**
@@ -329,12 +350,12 @@ export default class NavigateToRecordExample extends NavigationMixin(LightningEl
 - **Code Example**:
 
 ```javascript
-import { createElement } from 'lwc';
-import MyComponent from 'c/myComponent';
+import { createElement } from "lwc";
+import MyComponent from "c/myComponent";
 
-describe('c-my-component', () => {
-  it('renders correctly', () => {
-    const element = createElement('c-my-component', {
+describe("c-my-component", () => {
+  it("renders correctly", () => {
+    const element = createElement("c-my-component", {
       is: MyComponent
     });
     document.body.appendChild(element);
@@ -346,3 +367,92 @@ describe('c-my-component', () => {
 ##### **Logging Errors**
 
 - **How it's used**: Errors can be logged for
+
+debugging using `console.error` and `JSON.stringify` for complex objects.
+
+- **Code Example**:
+
+```javascript
+try {
+  // Some code that might throw an error
+} catch (error) {
+  console.error("An error occurred:", JSON.stringify(error));
+}
+```
+
+#### 7. **External Libraries and Static Resources**
+
+##### **Using External JavaScript Libraries**
+
+- **How it's used**: Add the library to a static resource and import it in the component.
+- **Code Example**:
+
+```javascript
+import { LightningElement } from "lwc";
+import { loadScript } from "lightning/platformResourceLoader";
+import myLibrary from "@salesforce/resourceUrl/myLibrary";
+
+export default class MyComponent extends LightningElement {
+  connectedCallback() {
+    loadScript(this, myLibrary)
+      .then(() => {
+        // Use the library
+      })
+      .catch((error) => {
+        console.error("Error loading script:", error);
+      });
+  }
+}
+```
+
+##### **Static Resources**
+
+- **How it's used**: Static resources are used to host JavaScript libraries or other files required by your component.
+- **Code Example**:
+
+```javascript
+import { LightningElement } from "lwc";
+import myResource from "@salesforce/resourceUrl/myResource";
+
+export default class MyComponent extends LightningElement {
+  resourceUrl = myResource;
+}
+```
+
+#### 8. **Rendering and Template Management**
+
+##### **Conditional Rendering**
+
+- **How it's used**: Conditional rendering is used to show or hide parts of the template based on component state.
+- **Code Example**:
+
+```html
+<template>
+  <template if:true="{isVisible}">
+    <p>This is conditionally rendered</p>
+  </template>
+  <template if:false="{isVisible}">
+    <p>This is hidden</p>
+  </template>
+</template>
+
+// myComponent.js import { LightningElement, track } from 'lwc'; export default
+class MyComponent extends LightningElement { @track isVisible = true; }
+```
+
+##### **Template Iteration**
+
+- **How it's used**: Template iteration is used to iterate over a list of items and render a component for each item.
+- **Code Example**:
+
+```html
+<template>
+  <template for:each="{items}" for:item="item">
+    <p key="{item.id}">{item.name}</p>
+  </template>
+</template>
+
+// myComponent.js import { LightningElement, track } from 'lwc'; export default
+class MyComponent extends LightningElement { @track items = [ { id: 1, name:
+'Item 1' }, { id: 2, name: 'Item 2' }, { id: 3, name: 'Item 3' } ]; }
+```
